@@ -125,7 +125,7 @@ jobs:
   nuget:
     name: 🚀 push to NuGet
     runs-on: ubuntu-latest
-    if: ${{ inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == true }}
     needs:
       - determine-version
       - build
@@ -151,7 +151,7 @@ jobs:
       - build
       - nuget
     runs-on: ubuntu-latest
-    if: ${{ inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == true }}
     permissions:
       contents: write
     env:
