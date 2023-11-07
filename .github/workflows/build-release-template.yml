@@ -8,6 +8,7 @@ on:
         type: string
         description: 'Project name'
         required: true
+
       project_path:
         type: string
         description: 'Project path'
@@ -61,7 +62,7 @@ jobs:
     steps:
       - name: Fail if not manual trigger or PR merge
         run: exit 1
-        if: ${{ !(github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && pull_request.merged == true)) }}
+        if: ${{ !(github.event.event_name == 'workflow_dispatch' || (github.event.event_name == 'pull_request' && github.event.event.pull_request.merged == true)) }}
   determine-version:
     runs-on: ubuntu-latest
     outputs:
