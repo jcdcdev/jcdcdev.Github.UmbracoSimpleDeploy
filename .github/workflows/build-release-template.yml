@@ -8,10 +8,6 @@ on:
         type: string
         description: 'Project name'
         required: true
-      artifact_name:
-        type: string
-        description: 'Artifact name'
-        required: true
       project_path:
         type: string
         description: 'Project path'
@@ -65,7 +61,7 @@ jobs:
     steps:
       - name: Fail if not manual trigger or PR merge
         run: exit 1
-        if: ${{ !(github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)) }}
+        if: ${{ !(github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && pull_request.merged == true)) }}
   determine-version:
     runs-on: ubuntu-latest
     outputs:
@@ -86,17 +82,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: determine-version
     env:
-      PROJECT_NAME: ${{ github.event.inputs.project_name }}
-      ARTIFACT_NAME: ${{ github.event.inputs.artifact_name }}-${{ needs.determine-version.outputs.semVer }}
-      PROJECT_PATH: ${{ github.event.inputs.project_path }}
-      NPM_WORKING_DIR: ${{ github.event.inputs.npm_working_dir }}
-      NPM_ENABLED: ${{ github.event.inputs.npm_enabled }}
-      NPM_RUN_COMMAND: ${{ github.event.inputs.npm_run_command }}
-      NPM_VERSION: ${{ github.event.inputs.npm_version }}
-      DOTNET_VERSION: ${{ github.event.inputs.dotnet_version }}
-      BUILD_OUTPUT: ${{ github.event.inputs.build_output }}
-      ARTIFACT_OUTPUT: ${{ github.event.inputs.artifact_output }}
-      NUGET_API_KEY: ${{ github.event.inputs.nuget_api_key }}
+      PROJECT_NAME: ${{ inputs.project_name }}
+      ARTIFACT_NAME: ${{ inputs.project_name }}-${{ needs.determine-version.outputs.semVer }}
+      PROJECT_PATH: ${{ inputs.project_path }}
+      NPM_WORKING_DIR: ${{ inputs.npm_working_dir }}
+      NPM_ENABLED: ${{ inputs.npm_enabled }}
+      NPM_RUN_COMMAND: ${{ inputs.npm_run_command }}
+      NPM_VERSION: ${{ inputs.npm_version }}
+      DOTNET_VERSION: ${{ inputs.dotnet_version }}
+      BUILD_OUTPUT: ${{ inputs.build_output }}
+      ARTIFACT_OUTPUT: ${{ inputs.artifact_output }}
+      NUGET_API_KEY: ${{ secrets.nuget_api_key }}
     outputs:
       artifactName: ${{ env.ARTIFACT_NAME }}
     steps:
@@ -135,7 +131,7 @@ jobs:
   nuget:
     name: push ${{ needs.determine-version.outputs.semVer }}
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == 'true' }}
     needs:
       - determine-version
       - build
@@ -152,7 +148,7 @@ jobs:
           path: ${{ env.ARTIFACT_PATH }}
 
 #      - name: Push to NuGet
-#        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+#        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
   
   create-release:
     name: create release ${{ needs.determine-version.outputs.semVer }}
@@ -161,7 +157,7 @@ jobs:
       - build
       - nuget
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.deploy == 'true' }}
+    if: ${{ inputs.deploy == 'true' }}
     permissions:
       contents: write
     env:
