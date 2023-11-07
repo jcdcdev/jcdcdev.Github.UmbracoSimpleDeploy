@@ -57,12 +57,6 @@ on:
         description: 'NuGet API key'
         required: true
 jobs:
-  check_trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail if not manual trigger or PR merge
-        run: exit 1
-        if: ${{ !(github.event.event_name == 'workflow_dispatch' || (github.event.event_name == 'pull_request' && github.event.event.pull_request.merged == true)) }}
   determine-version:
     runs-on: ubuntu-latest
     outputs:
