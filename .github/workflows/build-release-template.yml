@@ -1,0 +1,209 @@
+name: Release Package
+run-name: >
+  push NuGet ${{ github.repository}} #${{ github.run_number }}
+on:
+  workflow_call:
+    inputs:
+      project_name:
+        type: string
+        description: 'Project name'
+        required: true
+      artifact_name:
+        type: string
+        description: 'Artifact name'
+        required: true
+      project_path:
+        type: string
+        description: 'Project path'
+        required: true
+      npm_working_dir:
+        type: string
+        description: 'NPM working directory'
+        required: false
+      npm_enabled:
+        type: boolean
+        description: 'NPM enabled'
+        required: false
+        default: false
+      npm_run_command:
+        type: string
+        description: 'NPM run command'
+        required: false
+        default: 'build'
+      npm_version:
+        type: string
+        description: 'NPM version'
+        required: false
+        default: '18'
+      dotnet_version:
+        type: string
+        description: '.NET version'
+        required: false
+        default: '6.0.x'
+      build_output:
+        type: string
+        description: 'Build output'
+        required: false
+        default: './build-output'
+      artifact_output:
+        type: string
+        description: 'Artifact output'
+        required: false
+        default: './build-assets'
+      deploy:
+        type: boolean
+        description: 'Deploy'
+        required: false
+        default: false
+    secrets:
+      NUGET_API_KEY:
+        description: 'NuGet API key'
+        required: true
+      GITHUB_TOKEN:
+        description: 'GitHub token'
+        required: true
+jobs:
+  check_trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if not manual trigger or PR merge
+        run: exit 1
+        if: ${{ !(github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)) }}
+  determine-version:
+    runs-on: ubuntu-latest
+    outputs:
+      semVer: ${{ steps.gitversion.outputs.semVer }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0
+  build:
+    name: build ${{ needs.determine-version.outputs.semVer }}
+    runs-on: ubuntu-latest
+    needs: determine-version
+    env:
+      PROJECT_NAME: ${{ github.event.inputs.project_name }}
+      ARTIFACT_NAME: ${{ github.event.inputs.artifact_name }}-${{ needs.determine-version.outputs.semVer }}
+      PROJECT_PATH: ${{ github.event.inputs.project_path }}
+      NPM_WORKING_DIR: ${{ github.event.inputs.npm_working_dir }}
+      NPM_ENABLED: ${{ github.event.inputs.npm_enabled }}
+      NPM_RUN_COMMAND: ${{ github.event.inputs.npm_run_command }}
+      NPM_VERSION: ${{ github.event.inputs.npm_version }}
+      DOTNET_VERSION: ${{ github.event.inputs.dotnet_version }}
+      BUILD_OUTPUT: ${{ github.event.inputs.build_output }}
+      ARTIFACT_OUTPUT: ${{ github.event.inputs.artifact_output }}
+      NUGET_API_KEY: ${{ github.event.inputs.nuget_api_key }}
+    outputs:
+      artifactName: ${{ env.ARTIFACT_NAME }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - uses: actions/setup-node@v3
+      if: ${{ env.NPM_ENABLED == 'true' }}
+      with:
+        node-version: ${{ env.NPM_VERSION }}
+
+    - if: ${{ env.NPM_ENABLED == 'true' }}
+      run: |
+        pushd ${{ env.NPM_WORKING_DIR }}
+        npm install
+        npm run ${{ env.NPM_RUN_COMMAND }}
+        popd
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Build project
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }}
+    
+    - name: Pack
+      run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.ARTIFACT_OUTPUT }}
+
+  nuget:
+    name: push ${{ needs.determine-version.outputs.semVer }}
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.deploy == 'true' }}
+    needs:
+      - determine-version
+      - build
+    env:
+      SEMVER: ${{ needs.determine-version.outputs.semVer }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifactName }}
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      ARTIFACT_PATH: ./packages
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_PATH }}
+
+#      - name: Push to NuGet
+#        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+  
+  create-release:
+    name: create release ${{ needs.determine-version.outputs.semVer }}
+    needs:
+      - determine-version
+      - build
+      - nuget
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.deploy == 'true' }}
+    permissions:
+      contents: write
+    env:
+      SEMVER: ${{ needs.determine-version.outputs.semVer }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.assetName }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download package
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+      
+      - run: echo "PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
+      
+      - name: Generate changelog
+        id: changelog
+        uses: jaywcjlove/changelog-generator@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
+          filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
+          custom-emoji: 'feature🌟'
+
+      - name: Get the changelog
+        run: echo "${{ steps.changelog.outputs.changelog }}"
+    
+      # - name: Create Release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: ${{ env.ARTIFACT_NAME }}
+      #     allowUpdates: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: ${{ env.SEMVER }}
+      #     tag: ${{ env.SEMVER }}
+      #     body: |
+      #       Compare https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}
+
+      #       ${{ steps.changelog.outputs.changelog }}        
