@@ -1,6 +1,4 @@
-name: Release Package
-run-name: >
-  push NuGet ${{ github.repository}} #${{ github.run_number }}
+name: Build and Release Package
 on:
   workflow_call:
     inputs:
@@ -8,7 +6,6 @@ on:
         type: string
         description: 'Project name'
         required: true
-
       project-path:
         type: string
         description: 'Project path'
@@ -58,6 +55,7 @@ on:
         required: true
 jobs:
   determine-version:
+    name: 🔢 determine version
     runs-on: ubuntu-latest
     outputs:
       semVer: ${{ steps.gitversion.outputs.semVer }}
@@ -73,7 +71,7 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
   build:
-    name: build ${{ needs.determine-version.outputs.semVer }}
+    name: 🏗️ build ${{ needs.determine-version.outputs.semVer }}
     runs-on: ubuntu-latest
     needs: determine-version
     env:
@@ -125,7 +123,7 @@ jobs:
         path: ${{ env.ARTIFACT_OUTPUT }}
 
   nuget:
-    name: push ${{ needs.determine-version.outputs.semVer }}
+    name: 🚀 push to NuGet
     runs-on: ubuntu-latest
     if: ${{ inputs.deploy == 'true' }}
     needs:
@@ -147,7 +145,7 @@ jobs:
 #        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
   
   create-release:
-    name: create release ${{ needs.determine-version.outputs.semVer }}
+    name: 🚀 create release
     needs:
       - determine-version
       - build
