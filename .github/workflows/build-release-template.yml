@@ -59,9 +59,6 @@ on:
       NUGET_API_KEY:
         description: 'NuGet API key'
         required: true
-      GITHUB_TOKEN:
-        description: 'GitHub token'
-        required: true
 jobs:
   check_trigger:
     runs-on: ubuntu-latest
