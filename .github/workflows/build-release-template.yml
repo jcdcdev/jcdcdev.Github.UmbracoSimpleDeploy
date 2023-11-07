@@ -4,45 +4,45 @@ run-name: >
 on:
   workflow_call:
     inputs:
-      project_name:
+      project-name:
         type: string
         description: 'Project name'
         required: true
 
-      project_path:
+      project-path:
         type: string
         description: 'Project path'
         required: true
-      npm_working_dir:
+      npm-working-dir:
         type: string
         description: 'NPM working directory'
         required: false
-      npm_enabled:
+      npm-enabled:
         type: boolean
         description: 'NPM enabled'
         required: false
         default: false
-      npm_run_command:
+      npm-run-command:
         type: string
         description: 'NPM run command'
         required: false
         default: 'build'
-      npm_version:
+      npm-version:
         type: string
         description: 'NPM version'
         required: false
         default: '18'
-      dotnet_version:
+      dotnet-version:
         type: string
         description: '.NET version'
         required: false
         default: '6.0.x'
-      build_output:
+      build-output:
         type: string
         description: 'Build output'
         required: false
         default: './build-output'
-      artifact_output:
+      artifact-output:
         type: string
         description: 'Artifact output'
         required: false
@@ -53,7 +53,7 @@ on:
         required: false
         default: false
     secrets:
-      NUGET_API_KEY:
+      nuget_api_key:
         description: 'NuGet API key'
         required: true
 jobs:
@@ -83,19 +83,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: determine-version
     env:
-      PROJECT_NAME: ${{ inputs.project_name }}
-      ARTIFACT_NAME: ${{ inputs.project_name }}-${{ needs.determine-version.outputs.semVer }}
-      PROJECT_PATH: ${{ inputs.project_path }}
-      NPM_WORKING_DIR: ${{ inputs.npm_working_dir }}
-      NPM_ENABLED: ${{ inputs.npm_enabled }}
-      NPM_RUN_COMMAND: ${{ inputs.npm_run_command }}
-      NPM_VERSION: ${{ inputs.npm_version }}
-      DOTNET_VERSION: ${{ inputs.dotnet_version }}
-      BUILD_OUTPUT: ${{ inputs.build_output }}
-      ARTIFACT_OUTPUT: ${{ inputs.artifact_output }}
+      PROJECT_NAME: ${{ inputs.project-name }}
+      ARTIFACT_NAME: ${{ inputs.project-name }}-${{ needs.determine-version.outputs.semVer }}
+      PROJECT_PATH: ${{ inputs.project-path }}
+      NPM_WORKING_DIR: ${{ inputs.npm-working-dir }}
+      NPM_ENABLED: ${{ inputs.npm-enabled }}
+      NPM_RUN_COMMAND: ${{ inputs.npm-run-command }}
+      NPM_VERSION: ${{ inputs.npm-version }}
+      DOTNET_VERSION: ${{ inputs.dotnet-version }}
+      BUILD_OUTPUT: ${{ inputs.build-output }}
+      ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
       NUGET_API_KEY: ${{ secrets.nuget_api_key }}
+      SEMVER: ${{ needs.determine-version.outputs.semVer }}
     outputs:
-      artifactName: ${{ env.ARTIFACT_NAME }}
+      ARTIFACT_NAME: ${{ env.artifact_name }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -138,7 +139,7 @@ jobs:
       - build
     env:
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
-      ARTIFACT_NAME: ${{ needs.build.outputs.artifactName }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.ARTIFACT_NAME }}
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       ARTIFACT_PATH: ./packages
     steps:
