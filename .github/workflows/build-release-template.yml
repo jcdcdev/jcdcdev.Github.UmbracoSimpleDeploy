@@ -85,10 +85,9 @@ jobs:
       DOTNET_VERSION: ${{ inputs.dotnet-version }}
       BUILD_OUTPUT: ${{ inputs.build-output }}
       ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
-      NUGET_API_KEY: ${{ secrets.nuget_api_key }}
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
     outputs:
-      ARTIFACT_NAME: ${{ env.artifact_name }}
+      artifact-name: ${{ env.artifact_name }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -131,8 +130,8 @@ jobs:
       - build
     env:
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
-      ARTIFACT_NAME: ${{ needs.build.outputs.ARTIFACT_NAME }}
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifact-name }}
+      NUGET_API_KEY: ${{ secrets.nuget-api-key }}
       ARTIFACT_PATH: ./packages
     steps:
       - name: Download package
@@ -156,7 +155,7 @@ jobs:
       contents: write
     env:
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
-      ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifact-name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
