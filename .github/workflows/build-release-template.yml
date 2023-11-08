@@ -87,7 +87,7 @@ jobs:
       ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
     outputs:
-      artifact-name: ${{ env.artifact_name }}
+      artifact-name: ${{ env.ARTIFACT_NAME }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
