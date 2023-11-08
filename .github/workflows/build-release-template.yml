@@ -141,8 +141,8 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_PATH }}
 
-#      - name: Push to NuGet
-#        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+      - name: Push to NuGet
+        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}\*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
   
   create-release:
     name: 🚀 create release
@@ -156,7 +156,7 @@ jobs:
       contents: write
     env:
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
-      ARTIFACT_NAME: ${{ needs.build.outputs.assetName }}
+      ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -182,15 +182,15 @@ jobs:
       - name: Get the changelog
         run: echo "${{ steps.changelog.outputs.changelog }}"
     
-      # - name: Create Release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: ${{ env.ARTIFACT_NAME }}
-      #     allowUpdates: true
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     name: ${{ env.SEMVER }}
-      #     tag: ${{ env.SEMVER }}
-      #     body: |
-      #       Compare https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ${{ env.ARTIFACT_NAME }}
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.SEMVER }}
+          tag: ${{ env.SEMVER }}
+          body: |
+            Compare https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}
 
-      #       ${{ steps.changelog.outputs.changelog }}        
+            ${{ steps.changelog.outputs.changelog }}        
