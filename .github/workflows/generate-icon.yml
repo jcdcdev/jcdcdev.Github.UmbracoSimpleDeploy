@@ -34,7 +34,7 @@ jobs:
       COLOR_SECONDARY: ${{ inputs.color-secondary }}
       COLOR_TERTIARY: ${{ inputs.color-tertiary }}
       SVG_TEMPLATE_INPUT: ${{ inputs.svg-file-path }}
-      PNG_EXPORT_PATH: "./dist/assets/${{ inputs.icon-file-name }}"
+      PNG_EXPORT_PATH: "./${{ inputs.icon-file-name }}"
       WIDTH: "128"
       HEIGHT: "128"
       ICON_FILE_NAME: ${{ inputs.icon-file-name }}
