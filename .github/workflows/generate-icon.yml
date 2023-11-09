@@ -24,7 +24,7 @@ on:
         description: "Path to SVG file"
         required: false
         type: string
-        default: "./src/assets/icon.svg.template"
+        default: "./src/assets/icon.template.svg"
 jobs:
   generate-icon:
     name: 🏗️ Generate icon
@@ -33,8 +33,8 @@ jobs:
       COLOR_PRIMARY: ${{ inputs.color-primary }}
       COLOR_SECONDARY: ${{ inputs.color-secondary }}
       COLOR_TERTIARY: ${{ inputs.color-tertiary }}
-      SVG_FILE_PATH: ${{ inputs.svg-file-path }}
-      SVG_EXPORT_PATH: "./dist/assets/${{ inputs.icon-file-name }}"
+      SVG_TEMPLATE_INPUT: ${{ inputs.svg-file-path }}
+      PNG_EXPORT_PATH: "./dist/assets/${{ inputs.icon-file-name }}"
       WIDTH: "128"
       HEIGHT: "128"
       ICON_FILE_NAME: ${{ inputs.icon-file-name }}
@@ -43,7 +43,6 @@ jobs:
         with:
           repository: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy
           ref: main
-      - uses: actions/setup-node@v3
       - name: 🏗️ Generate icon
         shell: bash
         run: |
@@ -51,14 +50,14 @@ jobs:
           npm install convert-svg-to-png -g
           
           # Replace color placeholders in SVG file
-          sed -i "s/{{COLOR_PRIMARY}}/$COLOR_PRIMARY/g" $SVG_FILE_PATH
-          sed -i "s/{{COLOR_SECONDARY}}/$COLOR_SECONDARY/g" $SVG_FILE_PATH
-          sed -i "s/{{COLOR_TERTIARY}}/$COLOR_TERTIARY/g" $SVG_FILE_PATH
+          sed -i "s/{{COLOR_PRIMARY}}/$COLOR_PRIMARY/g" $SVG_TEMPLATE_INPUT
+          sed -i "s/{{COLOR_SECONDARY}}/$COLOR_SECONDARY/g" $SVG_TEMPLATE_INPUT
+          sed -i "s/{{COLOR_TERTIARY}}/$COLOR_TERTIARY/g" $SVG_TEMPLATE_INPUT
 
           # Export SVG as PNG
-          convert-svg-to-png $SVG_FILE_PATH $SVG_EXPORT_PATH --width $WIDTH --height $HEIGHT
+          inkscape -z -e $PNG_EXPORT_PATH -w $WIDTH - $HEIGHT $SVG_TEMPLATE_INPUT
       - name: 📦 Upload icon
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ICON_FILE_NAME }}
-          path: ${{ env.SVG_EXPORT_PATH }}
+          path: ${{ env.PNG_EXPORT_PATH }}
