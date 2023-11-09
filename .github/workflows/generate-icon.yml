@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           # Install dependencies
-          sudo apt install inkscape          
+          sudo apt install -y librsvg2-bin
           
           # Replace color placeholders in SVG file
           sed -i "s/{{COLOR_PRIMARY}}/$COLOR_PRIMARY/g" $SVG_TEMPLATE_INPUT
@@ -55,7 +55,7 @@ jobs:
           sed -i "s/{{COLOR_TERTIARY}}/$COLOR_TERTIARY/g" $SVG_TEMPLATE_INPUT
 
           # Export SVG as PNG
-          inkscape -z -e $PNG_EXPORT_PATH -w $WIDTH - $HEIGHT $SVG_TEMPLATE_INPUT
+          rsvg-convert -w $WIDTH -h $HEIGHT $SVG_TEMPLATE_INPUT -o $PNG_EXPORT_PATH 
       - name: 📦 Upload icon
         uses: actions/upload-artifact@v2
         with:
