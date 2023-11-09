@@ -181,7 +181,6 @@ jobs:
     needs:
       - determine-version
       - build
-      - nuget
     runs-on: ubuntu-latest
     if: ${{ inputs.deploy == true }}
     permissions:
