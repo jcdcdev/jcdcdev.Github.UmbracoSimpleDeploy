@@ -3,16 +3,16 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      colour-primary:
-        description: "Primary colour"
+      color-primary:
+        description: "Primary color"
         required: true
         type: string
-      colour-secondary:
-        description: "Secondary colour"
+      color-secondary:
+        description: "Secondary color"
         required: true
         type: string
-      colour-tertiary:
-        description: "Tertiary colour"
+      color-tertiary:
+        description: "Tertiary color"
         required: true
         type: string
       icon-artifact-name:
@@ -30,9 +30,9 @@ jobs:
     name: 🏗️ Generate icon
     runs-on: ubuntu-latest
     env:
-      COLOUR_PRIMARY: ${{ github.event.inputs.colour-primary }}
-      COLOUR_SECONDARY: ${{ github.event.inputs.colour-secondary }}
-      COLOUR_TERTIARY: ${{ github.event.inputs.colour-tertiary }}
+      COLOR_PRIMARY: ${{ github.event.inputs.color-primary }}
+      COLOR_SECONDARY: ${{ github.event.inputs.color-secondary }}
+      COLOR_TERTIARY: ${{ github.event.inputs.color-tertiary }}
       SVG_FILE_PATH: ${{ github.event.inputs.svg-file-path }}
       SVG_EXPORT_PATH: "./dist/assets/icon.png"
       WIDTH: "128"
