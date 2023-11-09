@@ -58,7 +58,7 @@ on:
         type: string
         description: 'Primary color'
         required: false
-        default: '#ff0000'
+        default: '#8A897C'
       color-secondary:
         type: string
         description: 'Secondary color'
