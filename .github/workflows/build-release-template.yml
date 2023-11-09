@@ -130,38 +130,32 @@ jobs:
         name: ${{ env.ICON_FILE_NAME }}
         path: ${{ env.ICON_ARTIFACT_PATH }}
     - name: Copy Icon artifact to nuget icon path if icon not exists
-      if: ! -f ${{ env.NUGET_ICON_PATH }}
+      if: $[! -f ${{ env.NUGET_ICON_PATH }}]
       run: |
         cp ${{ env.ICON_ARTIFACT_PATH }}/${{ env.ICON_FILE_NAME }} ${{ env.NUGET_ICON_PATH }}      
     - uses: actions/setup-node@v3
       if: ${{ env.NPM_ENABLED == 'true' }}
       with:
         node-version: ${{ env.NPM_VERSION }}
-
     - if: ${{ env.NPM_ENABLED == 'true' }}
       run: |
         pushd ${{ env.NPM_WORKING_DIR }}
         npm install
         npm run ${{ env.NPM_RUN_COMMAND }}
         popd
-        
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-
     - name: Build project
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }}
-    
     - name: Pack
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
-
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.ARTIFACT_OUTPUT }}
-
   nuget:
     name: 🚀 push to NuGet
     runs-on: ubuntu-latest
@@ -182,7 +176,6 @@ jobs:
           path: ${{ env.ARTIFACT_PATH }}
       - name: Push to NuGet
         run: dotnet nuget push ${{ env.ARTIFACT_PATH }}/**/*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
-  
   create-release:
     name: 🚀 create release
     needs:
@@ -200,9 +193,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
       - run: echo "PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
-      
       - name: Generate changelog
         id: changelog
         uses: jaywcjlove/changelog-generator@main
@@ -211,10 +202,6 @@ jobs:
           filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
           filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
           custom-emoji: 'feature🌟'
-
-      - name: Get the changelog
-        run: echo "${{ steps.changelog.outputs.changelog }}"
-    
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
