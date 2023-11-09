@@ -40,6 +40,9 @@ jobs:
       ICON_FILE_NAME: ${{ inputs.icon-file-name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy
+          ref: main
       - uses: actions/setup-node@v3
       - name: 🏗️ Generate icon
         shell: bash
