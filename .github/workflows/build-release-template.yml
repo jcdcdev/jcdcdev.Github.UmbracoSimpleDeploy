@@ -96,7 +96,7 @@ jobs:
       color-primary: ${{ inputs.color-primary }}
       color-secondary: ${{ inputs.color-secondary }}
       color-tertiary: ${{ inputs.color-tertiary }}
-      icon-file-name: ${{ inputs.icon-file-name }}
+      icon-artifact-name: ${{ inputs.icon-file-name }}
   build:
     name: 🏗️ build ${{ needs.determine-version.outputs.semVer }}
     runs-on: ubuntu-latest

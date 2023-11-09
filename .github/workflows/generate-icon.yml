@@ -34,10 +34,10 @@ jobs:
       COLOR_SECONDARY: ${{ github.event.inputs.color-secondary }}
       COLOR_TERTIARY: ${{ github.event.inputs.color-tertiary }}
       SVG_FILE_PATH: ${{ github.event.inputs.svg-file-path }}
-      SVG_EXPORT_PATH: "./dist/assets/icon.png"
+      SVG_EXPORT_PATH: "./dist/assets/${{ github.event.inputs.icon-file-name }}"
       WIDTH: "128"
       HEIGHT: "128"
-      ICON_ARTIFACT_NAME: ${{ github.event.inputs.icon-artifact-name }}
+      ICON_FILE_NAME: ${{ github.event.inputs.icon-file-name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -57,5 +57,5 @@ jobs:
       - name: 📦 Upload icon
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ICON_ARTIFACT_NAME }}
+          name: ${{ env.ICON_FILE_NAME }}
           path: ${{ env.SVG_EXPORT_PATH }}
