@@ -48,15 +48,15 @@ jobs:
         shell: bash
         run: |
           # Install dependencies
-          npm install -g svgexport
-
+          npm install convert-svg-to-png -g
+          
           # Replace color placeholders in SVG file
           sed -i "s/{{COLOR_PRIMARY}}/$COLOR_PRIMARY/g" $SVG_FILE_PATH
           sed -i "s/{{COLOR_SECONDARY}}/$COLOR_SECONDARY/g" $SVG_FILE_PATH
           sed -i "s/{{COLOR_TERTIARY}}/$COLOR_TERTIARY/g" $SVG_FILE_PATH
 
           # Export SVG as PNG
-          svgexport $SVG_FILE_PATH "$SVG_EXPORT_PATH " $WIDTH:$HEIGHT
+          convert-svg-to-png $SVG_FILE_PATH $SVG_EXPORT_PATH --width $WIDTH --height $HEIGHT
       - name: 📦 Upload icon
         uses: actions/upload-artifact@v2
         with:
