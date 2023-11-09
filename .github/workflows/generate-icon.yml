@@ -1,0 +1,61 @@
+name: Generate icon
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      colour-primary:
+        description: "Primary colour"
+        required: true
+        type: string
+      colour-secondary:
+        description: "Secondary colour"
+        required: true
+        type: string
+      colour-tertiary:
+        description: "Tertiary colour"
+        required: true
+        type: string
+      icon-artifact-name:
+        description: "Name of the icon file artifact"
+        required: false
+        type: string
+        default: "icon"
+      svg-file-path:
+        description: "Path to SVG file"
+        required: false
+        type: string
+        default: "./src/assets/icon.svg.template"
+jobs:
+  generate-icon:
+    name: 🏗️ Generate icon
+    runs-on: ubuntu-latest
+    env:
+      COLOUR_PRIMARY: ${{ github.event.inputs.colour-primary }}
+      COLOUR_SECONDARY: ${{ github.event.inputs.colour-secondary }}
+      COLOUR_TERTIARY: ${{ github.event.inputs.colour-tertiary }}
+      SVG_FILE_PATH: ${{ github.event.inputs.svg-file-path }}
+      SVG_EXPORT_PATH: "./dist/assets/icon.png"
+      WIDTH: "128"
+      HEIGHT: "128"
+      ICON_ARTIFACT_NAME: ${{ github.event.inputs.icon-artifact-name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+      - name: 🏗️ Generate icon
+        shell: bash
+        run: |
+          # Install dependencies
+          npm install -g svgexport
+
+          # Replace color placeholders in SVG file
+          sed -i "s/{{COLOR_PRIMARY}}/$COLOR_PRIMARY/g" $SVG_FILE_PATH
+          sed -i "s/{{COLOR_SECONDARY}}/$COLOR_SECONDARY/g" $SVG_FILE_PATH
+          sed -i "s/{{COLOR_TERTIARY}}/$COLOR_TERTIARY/g" $SVG_FILE_PATH
+
+          # Export SVG as PNG
+          svgexport $SVG_FILE_PATH "$SVG_EXPORT_PATH " $WIDTH:$HEIGHT
+      - name: 📦 Upload icon
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ICON_ARTIFACT_NAME }}
+          path: ${{ env.SVG_EXPORT_PATH }}
