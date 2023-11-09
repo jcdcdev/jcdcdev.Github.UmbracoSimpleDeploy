@@ -125,7 +125,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Download Icon
       uses: actions/download-artifact@v2
-      if: ! -f ${{ env.NUGET_ICON_PATH }}
+      if: $[! -f ${{ env.NUGET_ICON_PATH }}]
       with:
         name: ${{ env.ICON_FILE_NAME }}
         path: ${{ env.ICON_ARTIFACT_PATH }}
