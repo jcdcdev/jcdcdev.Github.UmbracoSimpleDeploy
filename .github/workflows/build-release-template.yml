@@ -69,6 +69,11 @@ on:
         description: 'Tertiary color'
         required: false
         default: '#8A897C'
+      nuget-icon-path:
+        type: string
+        description: 'NuGet icon path'
+        required: false
+        default: './docs/icon.png'
     secrets:
       nuget-api-key:
         description: 'NuGet API key'
@@ -91,6 +96,7 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
   generate-icon:
+    if: $[! -f ${{ inputs.nuget-icon-path }}]
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-icon.yml@main
     with:
       color-primary: ${{ inputs.color-primary }}
@@ -116,8 +122,7 @@ jobs:
       ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
       ICON_FILE_NAME: ${{ inputs.icon-file-name }}
-      ICON_ARTIFACT_PATH: "./dist/icons"
-      NUGET_ICON_PATH: "./docs/${{ inputs.icon-file-name }}"
+      NUGET_ICON_PATH: ${{ inputs.nuget-icon-path }}
     outputs:
       artifact-name: ${{ env.ARTIFACT_NAME }}
     steps:
@@ -128,12 +133,7 @@ jobs:
       if: $[! -f ${{ env.NUGET_ICON_PATH }}]
       with:
         name: ${{ env.ICON_FILE_NAME }}
-        path: ${{ env.ICON_ARTIFACT_PATH }}
-    - name: Copy Icon artifact to nuget icon path if icon not exists
-      if: $[! -f ${{ env.NUGET_ICON_PATH }}]
-      run: |
-        mkdir -p ${{ env.NUGET_ICON_PATH }}
-        cp ${{ env.ICON_ARTIFACT_PATH }}/${{ env.ICON_FILE_NAME }} ${{ env.NUGET_ICON_PATH }}      
+        path: ${{ env.NUGET_ICON_PATH }}   
     - uses: actions/setup-node@v3
       if: ${{ env.NPM_ENABLED == 'true' }}
       with:
