@@ -63,12 +63,12 @@ on:
         type: string
         description: 'Secondary color'
         required: false
-        default: '#0000ff'
+        default: '#8A897C'
       color-tertiary:
         type: string
         description: 'Tertiary color'
         required: false
-        default: '#00ff00'
+        default: '#8A897C'
     secrets:
       nuget-api-key:
         description: 'NuGet API key'
@@ -132,6 +132,7 @@ jobs:
     - name: Copy Icon artifact to nuget icon path if icon not exists
       if: $[! -f ${{ env.NUGET_ICON_PATH }}]
       run: |
+        mkdir -p ${{ env.NUGET_ICON_PATH }}
         cp ${{ env.ICON_ARTIFACT_PATH }}/${{ env.ICON_FILE_NAME }} ${{ env.NUGET_ICON_PATH }}      
     - uses: actions/setup-node@v3
       if: ${{ env.NPM_ENABLED == 'true' }}
