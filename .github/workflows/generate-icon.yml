@@ -1,6 +1,39 @@
 name: Generate icon
 on:
   workflow_dispatch:
+    inputs:
+      color-primary:
+        description: "Primary color"
+        required: true
+        type: string
+      color-secondary:
+        description: "Secondary color"
+        required: true
+        type: string
+      color-tertiary:
+        description: "Tertiary color"
+        required: true
+        type: string
+      icon-file-name:
+        description: "Name of the icon file artifact"
+        required: false
+        type: string
+        default: "icon"
+      svg-file-path:
+        description: "Path to SVG file"
+        required: false
+        type: string
+        default: "./src/assets/icon.template.svg"
+      height:
+        description: "Height of the icon"
+        required: false
+        type: string
+        default: "4096"
+      width:
+        description: "Width of the icon"
+        required: false
+        type: string
+        default: "4096"
   workflow_call:
     inputs:
       color-primary:
@@ -25,6 +58,16 @@ on:
         required: false
         type: string
         default: "./src/assets/icon.template.svg"
+      height:
+        description: "Height of the icon"
+        required: false
+        type: string
+        default: "128"
+      width:
+        description: "Width of the icon"
+        required: false
+        type: string
+        default: "128"
 jobs:
   generate-icon:
     name: 🏗️ Generate icon
@@ -35,8 +78,8 @@ jobs:
       COLOR_TERTIARY: ${{ inputs.color-tertiary }}
       SVG_TEMPLATE_INPUT: ${{ inputs.svg-file-path }}
       PNG_EXPORT_PATH: "./${{ inputs.icon-file-name }}"
-      WIDTH: "128"
-      HEIGHT: "128"
+      WIDTH: ${{ inputs.width }}
+      HEIGHT: ${{ inputs.height }}
       ICON_FILE_NAME: ${{ inputs.icon-file-name }}
     steps:
       - uses: actions/checkout@v4
