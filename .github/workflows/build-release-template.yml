@@ -33,7 +33,7 @@ on:
         type: string
         description: '.NET version'
         required: false
-        default: '6.0.x'
+        default: '8.0.x'
       build-output:
         type: string
         description: 'Build output'
