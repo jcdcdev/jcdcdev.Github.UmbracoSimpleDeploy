@@ -74,6 +74,11 @@ on:
         description: 'NuGet icon path'
         required: false
         default: './docs'
+      generate-icon:
+        type: boolean
+        description: 'Generate icon'
+        required: false
+        default: false
     secrets:
       nuget-api-key:
         description: 'NuGet API key'
@@ -96,7 +101,8 @@ jobs:
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
   generate-icon:
-    if: $[! -f ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}]
+    name: 🎨 generate icon
+    if: ${{ inputs.generate-icon == true }}
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-icon.yml@main
     with:
       color-primary: ${{ inputs.color-primary }}
@@ -130,7 +136,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Download Icon
       uses: actions/download-artifact@v2
-      if: $[! -f ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}]
+      if: ${{ inputs.generate-icon == true }}
       with:
         name: ${{ env.ICON_FILE_NAME }}
         path: ${{ env.NUGET_ICON_PATH }}   
@@ -148,6 +154,11 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Check package icon exists
+      if: $[! -f ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}]
+      run: |
+        echo "Icon file not found at ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}"
+        exit 1
     - name: Build project
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }}
     - name: Pack
