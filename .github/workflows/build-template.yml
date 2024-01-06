@@ -44,6 +44,11 @@ on:
         description: 'Artifact output'
         required: false
         default: './build-assets'
+      pack-only:
+        type: boolean
+        description: 'Pack only'
+        required: false
+        default: false
     outputs:
       artifact-name:
         description: 'Artifact name'
@@ -105,7 +110,8 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: Build project
-      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }}
+      if: ${{ inputs.pack-only == 'false' }}
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }} /maxcpucount:1
     - name: Pack
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
     - name: Upload artifact
