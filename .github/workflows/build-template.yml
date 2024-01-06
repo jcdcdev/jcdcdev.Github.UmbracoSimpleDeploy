@@ -44,10 +44,6 @@ on:
         description: 'Artifact output'
         required: false
         default: './build-assets'
-    secrets:
-      nuget-api-key:
-        description: 'NuGet API key'
-        required: true
     outputs:
       artifact-name:
         description: 'Artifact name'
