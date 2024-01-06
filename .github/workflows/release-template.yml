@@ -1,0 +1,67 @@
+name: Build and Release Package
+on:
+  workflow_call:
+    inputs:
+        artifact-name:
+            type: string
+            description: 'Artifact name'
+            required: true
+        version:
+            type: string
+            description: 'Version'
+            required: true
+    secrets:
+      nuget-api-key:
+        description: 'NuGet API key'
+        required: true
+jobs:
+  nuget:
+    name: 🚀 push to NuGet
+    runs-on: ubuntu-latest
+    env:
+      SEMVER: ${{ inputs.version }}
+      ARTIFACT_NAME: ${{ inputs.artifact-name }}
+      NUGET_API_KEY: ${{ secrets.nuget-api-key }}
+      ARTIFACT_PATH: ./packages
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.ARTIFACT_PATH }}
+      - name: Push to NuGet
+        run: dotnet nuget push ${{ env.ARTIFACT_PATH }}/**/*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+  create-release:
+    name: 🚀 create release
+    needs:
+      - nuget
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      SEMVER: ${{ inputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: echo "PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
+      - name: Generate changelog
+        id: changelog
+        uses: jaywcjlove/changelog-generator@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
+          filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
+          custom-emoji: 'feature🌟'
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.SEMVER }}
+          tag: ${{ env.SEMVER }}
+          body: |
+            Compare https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}
+
+            ${{ steps.changelog.outputs.changelog }}        
