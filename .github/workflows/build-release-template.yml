@@ -49,36 +49,6 @@ on:
         description: 'Deploy'
         required: false
         default: false
-      color-primary:
-        type: string
-        description: 'Primary color'
-        required: false
-        default: '#8A897C'
-      color-secondary:
-        type: string
-        description: 'Secondary color'
-        required: false
-        default: '#8A897C'
-      color-tertiary:
-        type: string
-        description: 'Tertiary color'
-        required: false
-        default: '#8A897C'
-      nuget-icon-name:
-        type: string
-        description: 'Icon artifact name'
-        required: false
-        default: 'icon.png'
-      nuget-icon-path:
-        type: string
-        description: 'NuGet icon path'
-        required: false
-        default: './docs'
-      generate-icon:
-        type: boolean
-        description: 'Generate icon'
-        required: false
-        default: false
     secrets:
       nuget-api-key:
         description: 'NuGet API key'
@@ -100,21 +70,11 @@ jobs:
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0
-  generate-icon:
-    name: 🎨 generate icon
-    if: ${{ inputs.generate-icon == true }}
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-icon.yml@main
-    with:
-      color-primary: ${{ inputs.color-primary }}
-      color-secondary: ${{ inputs.color-secondary }}
-      color-tertiary: ${{ inputs.color-tertiary }}
-      icon-file-name: ${{ inputs.nuget-icon-name }}
   build:
     name: 🏗️ build ${{ needs.determine-version.outputs.semVer }}
     runs-on: ubuntu-latest
     needs: 
       - determine-version
-      - generate-icon
     env:
       PROJECT_NAME: ${{ inputs.project-name }}
       ARTIFACT_NAME: ${{ inputs.project-name }}-${{ needs.determine-version.outputs.semVer }}
@@ -127,19 +87,11 @@ jobs:
       BUILD_OUTPUT: ${{ inputs.build-output }}
       ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
-      ICON_FILE_NAME: ${{ inputs.nuget-icon-name }}
-      NUGET_ICON_PATH: ${{ inputs.nuget-icon-path }}
     outputs:
       artifact-name: ${{ env.ARTIFACT_NAME }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    - name: Download Icon
-      uses: actions/download-artifact@v2
-      if: ${{ inputs.generate-icon == true }}
-      with:
-        name: ${{ env.ICON_FILE_NAME }}
-        path: ${{ env.NUGET_ICON_PATH }}   
     - uses: actions/setup-node@v3
       if: ${{ env.NPM_ENABLED == 'true' }}
       with:
@@ -154,11 +106,6 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Check package icon exists
-      if: $[! -f ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}]
-      run: |
-        echo "Icon file not found at ${{ inputs.nuget-icon-path }}/${{ inputs.nuget-icon-name }}"
-        exit 1
     - name: Build project
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }}
     - name: Pack
