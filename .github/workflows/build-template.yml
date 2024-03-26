@@ -87,6 +87,7 @@ jobs:
       NPM_RUN_COMMAND: ${{ inputs.npm-run-command }}
       NPM_VERSION: ${{ inputs.npm-version }}
       DOTNET_VERSION: ${{ inputs.dotnet-version }}
+      DOTNET_PACK: ${{ inputs.dotnet-pack }}
       BUILD_OUTPUT: ${{ inputs.build-output }}
       ARTIFACT_OUTPUT: ${{ inputs.artifact-output }}
       SEMVER: ${{ needs.determine-version.outputs.semVer }}
@@ -112,7 +113,7 @@ jobs:
     - name: Build project
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }} /maxcpucount:1
     - name: Pack
-      if: ${{ inputs.dotnet-pack == 'true' }}
+      if: ${{ env.DOTNET_PACK == 'true' }}
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
     - name: Upload artifact
       uses: actions/upload-artifact@v2
