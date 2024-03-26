@@ -112,10 +112,10 @@ jobs:
     - name: Build project
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }} /maxcpucount:1
     - name: Pack
-      if: ${{ inputs.dotnet-pack == 'false' }}
+      if: ${{ inputs.dotnet-pack == 'true' }}
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.ARTIFACT_NAME }}
-        path: "${{ env.ARTIFACT_OUTPUT }}/**.nupkg"
+        path: "${{ env.ARTIFACT_OUTPUT }}/**/*.nupkg"
