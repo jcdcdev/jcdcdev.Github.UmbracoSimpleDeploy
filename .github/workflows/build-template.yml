@@ -28,7 +28,7 @@ on:
         type: string
         description: 'NPM version'
         required: false
-        default: '18'
+        default: '21.x'
       dotnet-version:
         type: string
         description: '.NET version'
@@ -44,11 +44,11 @@ on:
         description: 'Artifact output'
         required: false
         default: './build-assets'
-      pack-only:
+      dotnet-pack:
         type: boolean
-        description: 'Pack only'
+        description: 'Run dotnet pack'
         required: false
-        default: false
+        default: true
     outputs:
       artifact-name:
         description: 'Artifact name'
@@ -110,9 +110,9 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: Build project
-      if: ${{ inputs.pack-only == 'false' }}
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.BUILD_OUTPUT }} /maxcpucount:1
     - name: Pack
+      if: ${{ inputs.dotnet-pack == 'false' }}
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.SEMVER }} --output ${{ env.ARTIFACT_OUTPUT }}
     - name: Upload artifact
       uses: actions/upload-artifact@v2
