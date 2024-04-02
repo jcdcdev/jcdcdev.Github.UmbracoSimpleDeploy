@@ -53,7 +53,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
           filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
-          custom-emoji: 'feature🌟'
+          custom-emoji: 'feature🌟,nuget📦'
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
@@ -62,6 +62,6 @@ jobs:
           name: ${{ env.SEMVER }}
           tag: ${{ env.SEMVER }}
           body: |
-            Compare https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}
+            Compare (${{ env.PREVIOUS_TAG }}...${{env.SEMVER}})[https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_TAG }}...${{env.SEMVER}}]
 
             ${{ steps.changelog.outputs.changelog }}        
