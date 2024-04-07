@@ -7,13 +7,12 @@ on:
             description: 'Version'
             required: true
 jobs:
-  update-release:
-    name: 🚀 update release
+  get-versions:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     env:
       SEMVER: ${{ inputs.version }}
+    outputs:
+      previous-version: ${{ steps.find-previous-tag.outputs.PREVIOUS_VERSION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,12 +25,21 @@ jobs:
             PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+(?=\s+v?[0-9]+\.[0-9]+\.[0-9]+$)' | head -n 1)
             echo "PREVIOUS_VERSION=${PREVIOUS_TAG}" >> $GITHUB_ENV
             echo "PREVIOUS_VERSION=${PREVIOUS_TAG}"
-      - uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-changelog.yml@main
-        id: changelog
-        with:
-          target-version: ${{ env.SEMVER }}
-          previous-version: ${{ env.PREVIOUS_VERSION }}
-      - uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-release.yml@main
-        with:
-          version: ${{ env.SEMVER }}
-          changelog: ${{ needs.changelog.outputs.changelog }}
+  generate-changelog:
+    needs: 
+      - get-versions
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-changelog.yml@main
+    with:
+      target-version: ${{ env.SEMVER }}
+      previous-version: ${{ needs.get-versions.outputs.previous-version }}
+  create-release:
+    needs:
+      - get-versions
+      - generate-changelog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-release.yml@main
+    with:
+      version: ${{ env.SEMVER }}
+      changelog: ${{ needs.changelog.outputs.changelog }}
