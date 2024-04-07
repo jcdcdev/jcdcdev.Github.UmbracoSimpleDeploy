@@ -62,5 +62,8 @@ jobs:
 
             ${{ steps.generate.outputs.changelog }}
         run: |
-          echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
-          echo "Changelog:\n\n$changelog"
+          {
+            echo 'changelog<<EOF'
+            echo "${CHANGELOG}"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
