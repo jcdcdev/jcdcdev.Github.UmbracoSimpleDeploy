@@ -1,0 +1,30 @@
+name: Create Release
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: "Version"
+        required: true
+      changelog:
+        type: string
+        description: "Changelog"
+        required: true
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+jobs:
+  create-release:
+    name: 🚀 create release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          omitNameDuringUpdate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ inputs.version }}
+          tag: ${{ inputs.version }}
+          body: ${{ inputs.changelog }}

@@ -1,0 +1,37 @@
+name: Update Release
+on:
+  workflow_call:
+    inputs:
+        version:
+            type: string
+            description: 'Version'
+            required: true
+jobs:
+  update-release:
+    name: 🚀 update release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      SEMVER: ${{ inputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Find Previous Version
+        id: find-previous-tag
+        run: |
+            git fetch --tags
+            PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+(?=\s+v?[0-9]+\.[0-9]+\.[0-9]+$)' | head -n 1)
+            echo "PREVIOUS_VERSION=${PREVIOUS_TAG}" >> $GITHUB_ENV
+            echo "PREVIOUS_VERSION=${PREVIOUS_TAG}"
+      - uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-changelog.yml@main
+        id: changelog
+        with:
+          target-version: ${{ env.SEMVER }}
+          previous-version: ${{ env.PREVIOUS_VERSION }}
+      - uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-release.yml@main
+        with:
+          version: ${{ env.SEMVER }}
+          changelog: ${{ needs.changelog.outputs.changelog }}

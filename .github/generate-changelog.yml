@@ -1,0 +1,56 @@
+name: Generate Changelog
+on:
+  workflow_call:
+    inputs:
+      previous-version:
+        type: string
+        description: "Previous version - defaults to previous tag if not provided"
+        required: false
+      target-version:
+        type: string
+        description: "Version"
+        required: true
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+jobs:
+  create-release:
+    name: 🚀 create release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TARGET_VERSION: ${{ inputs.target-version }}
+      PREVIOUS_VERSION: ${{ inputs.previous-version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - if: PREVIOUS_VERSION == ''
+        run: echo "PREVIOUS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
+      - if: PREVIOUS_VERSION == ''
+        run: |
+          echo "No previous version found, skipping changelog generation"
+          exit 0
+      - name: Generate changelog
+        id: generate-changelog
+        uses: jaywcjlove/changelog-generator@main
+        with:
+          head-ref: ${{ env.TARGET_VERSION }}
+          base-ref: ${{ env.PREVIOUS_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
+          filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
+          custom-emoji: "feature🌟,nuget📦,chore🧹"
+      - name: Create Changelog Body
+        id: changelog
+        env:
+          BODY: |
+            Compare [${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}}](https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}})
+
+            ${{ steps.changelog.outputs.changelog }}
+        run: |
+          echo "BODY=${BODY}" >> $GITHUB_ENV
+          echo "$BODY"
+        outputs:
+          changelog: ${{ env.BODY }}
