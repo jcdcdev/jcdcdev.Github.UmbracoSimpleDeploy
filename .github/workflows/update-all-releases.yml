@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Get all tags
-        shell: pwsh4
+        shell: pwsh
         id: set-matrix
         run: |
             git fetch --tags
