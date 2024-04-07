@@ -37,6 +37,6 @@ jobs:
       - nuget
     permissions:
       contents: write
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/lib/update-release.yml@main
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
     with:
       version: ${{ inputs.version }}

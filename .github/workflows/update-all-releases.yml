@@ -48,7 +48,7 @@ jobs:
         max-parallel: 1
         matrix:
             version: ${{fromJson(needs.get-tags.outputs.versions)}}
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/lib/update-release.yml@main
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
     permissions:
         contents: write
     with:
