@@ -37,6 +37,12 @@ jobs:
             echo "No previous version found, skipping changelog generation"
             exit 1
           fi
+
+          if [ "$(printf '%s\n' "${{ env.PREVIOUS_VERSION }}" "${{ env.TARGET_VERSION }}" | sort -V | head -n1)" != "${{ env.PREVIOUS_VERSION }}" ]; then
+            echo "Previous version is newer than target version, skipping changelog generation"
+            exit 1
+          fi
+
           echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
       - name: Generate changelog
         id: generate
@@ -51,10 +57,10 @@ jobs:
       - name: Create Changelog Body
         id: changelog
         env:
-          changelog: |
+          CHANGELOG: |
             Compare [${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}}](https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}})
 
             ${{ steps.generate.outputs.changelog }}
         run: |
-          echo "changelog=${changelog}" >> $GITHUB_ENV
-          echo "$changelog"
+          echo "changelog=${CHANGELOG}" >> $GITHUB_OUTPUT
+          echo "Changelog:\n\n$changelog"
