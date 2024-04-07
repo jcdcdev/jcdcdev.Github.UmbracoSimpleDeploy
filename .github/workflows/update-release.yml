@@ -38,5 +38,5 @@ jobs:
       contents: write
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-release.yml@main
     with:
-      version: ${{ env.SEMVER }}
+      version: ${{ inputs.version }}
       changelog: ${{ needs.generate-changelog.outputs.changelog }}
