@@ -1,4 +1,4 @@
-name: Update all releases
+name: 📄 Update Releases
 on:
     workflow_call:
         inputs:

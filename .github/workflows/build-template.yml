@@ -1,4 +1,4 @@
-name: Build Package
+name: 🏗️ Build Package
 on:
   workflow_call:
     inputs:

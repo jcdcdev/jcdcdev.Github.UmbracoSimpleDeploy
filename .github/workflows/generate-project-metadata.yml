@@ -1,4 +1,4 @@
-name: Get Project Metadata
+name: 🔍 Get Project Metadata
 on:
   workflow_call:
     outputs:
