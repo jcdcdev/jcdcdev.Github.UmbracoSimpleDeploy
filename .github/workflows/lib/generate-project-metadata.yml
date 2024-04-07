@@ -1,0 +1,27 @@
+name: Get Project Metadata
+on:
+  workflow_call:
+    outputs:
+      project-name:
+        value: ${{ jobs.metadata.outputs.project-name }}
+      project-path:
+        value: ${{ jobs.metadata.outputs.project-path }}
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      project-name: ${{ steps.set-metadata.outputs.project-name }}
+      project-path: ${{ steps.set-metadata.outputs.project-path }}
+    steps:
+      - name: Set project name
+        id: set-metadata
+        shell: pwsh
+        run: |
+          repo=${{ github.repository }}
+          projectName=${repo#*/}
+          projectPath="./src/$projectName/$projectName.csproj"
+
+          echo "project-name=$projectName" >> $env:GITHUB_OUTPUT
+          echo "project-path=$projectPath" >> $env:GITHUB_OUTPUT
+
+          echo "Metadata Set`n`nproject-name=$projectName`nproject-path=$projectPath"

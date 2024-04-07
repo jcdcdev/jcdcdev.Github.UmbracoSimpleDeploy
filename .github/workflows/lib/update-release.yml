@@ -56,7 +56,7 @@ jobs:
       - generate-changelog
     permissions:
       contents: write
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-release.yml@main
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-github-release.yml@main
     with:
       version: ${{ inputs.version }}
       changelog: ${{ needs.generate-changelog.outputs.changelog }}
