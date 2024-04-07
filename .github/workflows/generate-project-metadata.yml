@@ -12,6 +12,7 @@ jobs:
     outputs:
       project-name: ${{ steps.set-metadata.outputs.project-name }}
       project-path: ${{ steps.set-metadata.outputs.project-path }}
+      npm-project-path: ${{ steps.set-metadata.outputs.npm-project-path }}
     steps:
       - name: Set project name
         id: set-metadata
@@ -19,8 +20,10 @@ jobs:
         run: |
           $projectName=$env:GITHUB_REPOSITORY -replace '^.*?/', ''
           $projectPath="./src/$projectName/$projectName.csproj"
+          $npmProjectPath="./src/$projectName.Client"
 
           echo "project-name=$projectName" >> $env:GITHUB_OUTPUT
           echo "project-path=$projectPath" >> $env:GITHUB_OUTPUT
+          echo "npm-project-path=$npmProjectPath" >> $env:GITHUB_OUTPUT
 
-          echo "Metadata Set`n`nproject-name=$projectName`nproject-path=$projectPath"
+          echo "Metadata Set`n`nproject-name=$projectName`nproject-path=$projectPath`nnpm-project-path=$npmProjectPath"
