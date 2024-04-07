@@ -6,6 +6,8 @@ on:
         value: ${{ jobs.metadata.outputs.project-name }}
       project-path:
         value: ${{ jobs.metadata.outputs.project-path }}
+      npm-project-path:
+        value: ${{ jobs.metadata.outputs.npm-project-path }}
 jobs:
   metadata:
     runs-on: ubuntu-latest
