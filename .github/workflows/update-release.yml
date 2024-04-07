@@ -7,7 +7,7 @@ on:
             description: 'Version'
             required: true
 jobs:
-  get-versions:
+  get-previous-version:
     runs-on: ubuntu-latest
     outputs:
       previous-version: ${{ steps.find-previous-tag.outputs.previous-version }}
@@ -20,19 +20,24 @@ jobs:
       id: find-previous-tag
       run: |
         git fetch --tags
-        PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+(?=\s+v?[0-9]+\.[0-9]+\.[0-9]+$)' | head -n 1)
-        echo "previous-version=${PREVIOUS_TAG}" >> $GITHUB_ENV
+        PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?\d+\.\d+\.\d+$' | grep -B 1 ${{ inputs.version }} | head -n 1)
+        echo "previous-version=${PREVIOUS_TAG}" >> $GITHUB_OUTPUT
         echo "previous-version=${PREVIOUS_TAG}"
+
+        if [ -z "$PREVIOUS_TAG" ]; then
+          echo "No previous version found"
+          exit 1
+        fi
   generate-changelog:
     needs:
-      - get-versions
+      - get-previous-version
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-changelog.yml@main
     with:
       target-version: ${{ inputs.version }}
-      previous-version: ${{ needs.get-versions.outputs.previous-version }}
+      previous-version: ${{ needs.get-previous-version.outputs.previous-version }}
   create-release:
     needs:
-      - get-versions
+      - get-previous-version
       - generate-changelog
     permissions:
       contents: write
