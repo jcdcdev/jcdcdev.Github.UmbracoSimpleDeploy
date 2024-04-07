@@ -18,7 +18,7 @@ jobs:
         shell: pwsh
         run: |
           repo=${{ github.repository }}
-          projectName=${repo#*/}
+          projectName=$env:GITHUB_REPOSITORY -replace '^.*?/', ''
           projectPath="./src/$projectName/$projectName.csproj"
 
           echo "project-name=$projectName" >> $env:GITHUB_OUTPUT
