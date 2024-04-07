@@ -17,9 +17,8 @@ jobs:
         id: set-metadata
         shell: pwsh
         run: |
-          repo=${{ github.repository }}
-          projectName=$env:GITHUB_REPOSITORY -replace '^.*?/', ''
-          projectPath="./src/$projectName/$projectName.csproj"
+          $projectName=$env:GITHUB_REPOSITORY -replace '^.*?/', ''
+          $projectPath="./src/$projectName/$projectName.csproj"
 
           echo "project-name=$projectName" >> $env:GITHUB_OUTPUT
           echo "project-path=$projectPath" >> $env:GITHUB_OUTPUT
