@@ -16,7 +16,7 @@ jobs:
   get-tags:
     runs-on: ubuntu-latest
     outputs:
-      versions: ${{ steps.set-matrix.outputs.versions }}
+        versions: ${{ steps.set-matrix.outputs.versions }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -28,19 +28,26 @@ jobs:
         id: set-matrix
         run: |
             git fetch --tags
-            $tags = git tag | Sort-Object -Descending
-            $tags = $tags | Where-Object { $_ -ge $env:START_VERSION -and $_ -le $env:END_VERSION }
+            $allTags = git tag | Sort-Object -Descending
+            $tags = @()
+            foreach ($tag in $allTags) {
+                echo "Checking tag $tag"
+                if ($tag -ge $env:START_VERSION -and $tag -le $env:END_VERSION) {
+                    $tags += $tag
+                }
+            }
+            
             $versions = ConvertTo-Json -InputObject $tags -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
   update-release:
     needs: 
-      - get-tags
+        - get-tags
     strategy:
-      matrix:
-        version: ${{fromJson(needs.get-tags.outputs.versions)}}
+        matrix:
+            version: ${{fromJson(needs.get-tags.outputs.versions)}}
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
     permissions:
-      contents: write
+        contents: write
     with:
-      version: ${{ matrix.version }}
+        version: ${{ matrix.version }}
