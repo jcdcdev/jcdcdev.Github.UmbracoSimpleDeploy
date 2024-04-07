@@ -9,7 +9,7 @@ on:
                 type: string
             end-version:
                 description: 'The version to end at'
-                required: true
+                required: false
                 default: '999.999.999'
                 type: string
 jobs:
@@ -28,7 +28,7 @@ jobs:
         id: set-matrix
         run: |
             git fetch --tags
-            $allTags = git tag | Sort-Object -Descending
+            $allTags = git tag | Sort-Object -Ascending
             $tags = @()
             foreach ($tag in $allTags) {
                 echo "Checking tag $tag"
@@ -36,7 +36,7 @@ jobs:
                     $tags += $tag
                 }
             }
-            
+
             $versions = ConvertTo-Json -InputObject $tags -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
@@ -44,6 +44,8 @@ jobs:
     needs: 
         - get-tags
     strategy:
+        fail-fast: false
+        max-parallel: 1
         matrix:
             version: ${{fromJson(needs.get-tags.outputs.versions)}}
     uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
