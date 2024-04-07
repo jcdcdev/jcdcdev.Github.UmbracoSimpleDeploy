@@ -10,8 +10,6 @@ on:
         type: string
         description: "Changelog"
         required: true
-    outputs:
-      changelog: ${{ steps.changelog.outputs.changelog }}
 jobs:
   create-release:
     name: 🚀 create release

@@ -10,19 +10,19 @@ jobs:
   get-versions:
     runs-on: ubuntu-latest
     outputs:
-      previous-version: ${{ steps.find-previous-tag.outputs.PREVIOUS_VERSION }}
+      previous-version: ${{ steps.find-previous-tag.outputs.previous-version }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Find Previous Version
-        id: find-previous-tag
-        run: |
-          git fetch --tags
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+(?=\s+v?[0-9]+\.[0-9]+\.[0-9]+$)' | head -n 1)
-          echo "PREVIOUS_VERSION=${PREVIOUS_TAG}" >> $GITHUB_ENV
-          echo "PREVIOUS_VERSION=${PREVIOUS_TAG}"
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Find Previous Version
+      id: find-previous-tag
+      run: |
+        git fetch --tags
+        PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+$' | grep -P '^v?[0-9]+\.[0-9]+\.[0-9]+(?=\s+v?[0-9]+\.[0-9]+\.[0-9]+$)' | head -n 1)
+        echo "previous-version=${PREVIOUS_TAG}" >> $GITHUB_ENV
+        echo "previous-version=${PREVIOUS_TAG}"
   generate-changelog:
     needs:
       - get-versions

@@ -11,6 +11,10 @@ on:
         type: string
         description: "Version"
         required: true
+    outputs:
+      changelog: 
+        description: "Changelog"
+        value: ${{ jobs.generate-changelog.outputs.changelog }}
 jobs:
   generate-changelog:
     name: Generate Changelog
@@ -19,7 +23,7 @@ jobs:
       TARGET_VERSION: ${{ inputs.target-version }}
       PREVIOUS_VERSION: ${{ inputs.previous-version }}
     outputs:
-      changelog: ${{ env.changelog }}
+      changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,7 +36,7 @@ jobs:
           echo "No previous version found, skipping changelog generation"
           exit 1
       - name: Generate changelog
-        id: generate-changelog
+        id: generate
         uses: jaywcjlove/changelog-generator@main
         with:
           head-ref: ${{ env.TARGET_VERSION }}
@@ -47,7 +51,7 @@ jobs:
           changelog: |
             Compare [${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}}](https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}})
 
-            ${{ steps.changelog.outputs.changelog }}
+            ${{ steps.generate.outputs.changelog }}
         run: |
           echo "changelog=${changelog}" >> $GITHUB_ENV
           echo "$changelog"
