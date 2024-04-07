@@ -31,10 +31,13 @@ jobs:
           fetch-depth: 0
       - if: ${{ env.PREVIOUS_VERSION == '' }}
         run: echo "PREVIOUS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
-      - if: ${{ env.PREVIOUS_VERSION == '' }}
+      - name: Confirm previous version
         run: |
-          echo "No previous version found, skipping changelog generation"
-          exit 1
+          if [ -z "${{ env.PREVIOUS_VERSION }}" ]; then
+            echo "No previous version found, skipping changelog generation"
+            exit 1
+          fi
+          echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
       - name: Generate changelog
         id: generate
         uses: jaywcjlove/changelog-generator@main
