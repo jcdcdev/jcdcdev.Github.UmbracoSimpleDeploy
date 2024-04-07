@@ -1,0 +1,43 @@
+name: Update all releases
+on:
+    workflow_call:
+        inputs:
+            start-version:
+                description: 'The version to start from'
+                required: true
+                default: '0.0.0'
+                type: string
+            end-version:
+                description: 'The version to end at'
+                required: true
+                default: '999.999.999'
+                type: string
+jobs:
+  get-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.set-matrix.outputs.versions }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Get all tags
+        shell: pwsh4
+        id: set-matrix
+        run: |
+            git fetch --tags
+            $tags = git tag | Sort-Object -Descending
+            $tags = $tags | Where-Object { $_ -ge $env:START_VERSION -and $_ -le $env:END_VERSION }
+            $versions = ConvertTo-Json -InputObject $tags -Compress
+            echo "versions=$versions" >> $env:GITHUB_OUTPUT
+            echo "Versions are`n$versions"
+  update-release:
+    needs: 
+      - get-tags
+    strategy:
+      matrix:
+        version: ${{fromJson(needs.get-tags.outputs.versions)}}
+    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
+    permissions:
+      contents: write
+    with:
+      version: ${{ matrix.version }}
