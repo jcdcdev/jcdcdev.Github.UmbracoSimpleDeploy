@@ -6,15 +6,15 @@ on:
         value: ${{ jobs.metadata.outputs.project-name }}
       project-path:
         value: ${{ jobs.metadata.outputs.project-path }}
-      npm-project-path:
-        value: ${{ jobs.metadata.outputs.npm-project-path }}
+      npm-working-dir:
+        value: ${{ jobs.metadata.outputs.npm-working-dir }}
 jobs:
   metadata:
     runs-on: ubuntu-latest
     outputs:
       project-name: ${{ steps.set-metadata.outputs.project-name }}
       project-path: ${{ steps.set-metadata.outputs.project-path }}
-      npm-project-path: ${{ steps.set-metadata.outputs.npm-project-path }}
+      npm-working-dir: ${{ steps.set-metadata.outputs.npm-working-dir }}
     steps:
       - name: Set project name
         id: set-metadata
@@ -26,6 +26,6 @@ jobs:
 
           echo "project-name=$projectName" >> $env:GITHUB_OUTPUT
           echo "project-path=$projectPath" >> $env:GITHUB_OUTPUT
-          echo "npm-project-path=$npmProjectPath" >> $env:GITHUB_OUTPUT
+          echo "npm-working-dir=$npmProjectPath" >> $env:GITHUB_OUTPUT
 
-          echo "Metadata Set`n`nproject-name=$projectName`nproject-path=$projectPath`nnpm-project-path=$npmProjectPath"
+          echo "Metadata Set`n`nproject-name=$projectName`nproject-path=$projectPath`npm-working-dir=$npmProjectPath"
