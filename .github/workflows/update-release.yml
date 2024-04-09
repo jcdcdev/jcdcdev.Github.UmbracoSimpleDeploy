@@ -46,8 +46,10 @@ jobs:
         } 
 
         if ($versionExists -eq $false) {
-          git tag $env:Version -a
-          git push origin $env:Version -f
+          git config user.name "$env:GITHUB_ACTOR"
+          git config user.email "$env:GITHUB_ACTOR_ID+$env:GITHUB_ACTOR@users.noreply.github.com"
+          git tag -a "$env:Version" -m "Release $env:Version"
+          git push origin "$env:Version"
         }
         
         Write-Output "The nearest previous tag to $env:Version is $previousVersion"
