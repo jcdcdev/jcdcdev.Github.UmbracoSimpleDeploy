@@ -80,10 +80,11 @@ jobs:
       - name: Get Version
         id: get-version
         run: |
-          version=${{ steps.gitversion.outputs.Major }}.${{ steps.gitversion.outputs.Minor }}.${{ steps.gitversion.outputs.Patch}}
+          version=${{ inputs.umbraco-version }}.${{ steps.gitversion.outputs.Minor }}.${{ steps.gitversion.outputs.Patch}}
           if [ -n "${{ steps.gitversion.outputs.NuGetPreReleaseTagV2 }}" ]; then
-            version=${version}-${{ steps.gitversion.outputs.NuGetPreReleaseTagV2 }}
+            version="${version}-${{ steps.gitversion.outputs.NuGetPreReleaseTagV2 }}"
           fi
+          echo "$version"
           echo "package-version=$version" >> $GITHUB_OUTPUT
   build:
     name: 🏗️ build ${{ needs.determine-version.outputs.package-version }}
