@@ -125,7 +125,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: Build project
-      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.PACKAGE_VERSION }} --output ${{ env.ARTIFACT_OUTPUT }} -p:UmbracoVersion=${{ env.UMBRACO_VERSION }} /maxcpucount:1
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.PACKAGE_VERSION }} --output ${{ env.ARTIFACT_OUTPUT }} -p:UmbracoVersion=${{ env.UMBRACO_VERSION }} --source https://api.nuget.org/v3/index.json /maxcpucount:1 
     - name: Pack
       if: ${{ env.DOTNET_PACK == 'true' }}
       run: dotnet pack ${{ env.PROJECT_PATH }} --configuration Release -p:Version=${{ env.PACKAGE_VERSION }} --output ${{ env.ARTIFACT_OUTPUT }} -p:UmbracoVersion=${{ env.UMBRACO_VERSION }}
