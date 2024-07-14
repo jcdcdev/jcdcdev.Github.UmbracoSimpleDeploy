@@ -37,6 +37,14 @@ jobs:
                 }
             }
 
+            if ($tags.Count -gt 256) {
+                Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used"
+                # Tell user what start tag to use to continue from where we left off
+                Write-Output "start-version=$($tags[256])" >> $env:GITHUB_OUTPUT
+
+                $tags = $tags[0..255]
+            }
+
             $versions = ConvertTo-Json -InputObject $tags -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
