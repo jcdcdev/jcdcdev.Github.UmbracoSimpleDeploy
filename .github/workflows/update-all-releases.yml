@@ -53,10 +53,11 @@ jobs:
             $allTags = @() 
             
             git tag | ForEach-Object { 
-                $cleanTag = $_ -replace '^v', ''
+                $originalTag = $_
+                $cleanTag = $originalTag -replace '^v', ''
                 $index = Get-Index $cleanTag
                 $tagObj = New-Object PSObject -Property @{
-                    Tag = $_
+                    Tag = $originalTag
                     Index = $index
                 }
                 $allTags += $tagObj
@@ -68,8 +69,7 @@ jobs:
             $startTag = Get-Index $env:START_VERSION
             $endTag = Get-Index $env:END_VERSION
             foreach ($tagObj in $allTags) {
-                $tag = $tagObj.Tag
-                # echo "Checking tag $tag"
+                $tag = $($tagObj.Tag)
                 if ($tagObj.Index -ge $startTag -and $tagObj.Index -le $endTag) {
                     $tags += $tag
                 }
