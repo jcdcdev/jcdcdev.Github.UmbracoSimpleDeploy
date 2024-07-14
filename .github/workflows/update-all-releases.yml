@@ -27,7 +27,7 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
-            function Get-SemVerNumber($tag) {
+            function Get-Index($tag) {
                 # Split the tag into parts
                 $parts = $tag -split '\.'
             
@@ -53,21 +53,23 @@ jobs:
             
             git tag | ForEach-Object { 
                 $cleanTag = $_ -replace '^v', ''
-                $semVerNumber = Get-SemVerNumber $cleanTag
+                $index = Get-Index $cleanTag
                 $tagObj = New-Object PSObject -Property @{
                     Tag = $cleanTag
-                    SemVerNumber = $semVerNumber
+                    Index = $index
                 }
                 $allTags += $tagObj
             } 
 
-            $allTags = $allTags | Sort-Object -Property SemVerNumber
+            $allTags = $allTags | Sort-Object -Property Index
 
             $tags = @()
+            $startTag = Get-Index $env:START_VERSION
+            $endTag = Get-Index $env:END_VERSION
             foreach ($tagObj in $allTags) {
                 $tag = $tagObj.Tag
                 echo "Checking tag $tag"
-                if ($tag -ge $env:START_VERSION -and $tag -le $env:END_VERSION) {
+                if ($tagObj.Index -ge $startTag -and $tagObj.Index -le $endTag) {
                     $tags += $tag
                 }
             }
