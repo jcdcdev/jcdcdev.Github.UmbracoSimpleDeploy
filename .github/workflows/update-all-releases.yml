@@ -55,7 +55,7 @@ jobs:
                 $cleanTag = $_ -replace '^v', ''
                 $semVerNumber = Get-SemVerNumber $cleanTag
                 $tagObj = New-Object PSObject -Property @{
-                    OriginalTag = $cleanTag
+                    Tag = $cleanTag
                     SemVerNumber = $semVerNumber
                 }
                 $allTags += $tagObj
@@ -64,7 +64,8 @@ jobs:
             $allTags = $allTags | Sort-Object -Property SemVerNumber
 
             $tags = @()
-            foreach ($tag in $allTags) {
+            foreach ($tagObj in $allTags) {
+                $tag = $tagObj.Tag
                 echo "Checking tag $tag"
                 if ($tag -ge $env:START_VERSION -and $tag -le $env:END_VERSION) {
                     $tags += $tag
