@@ -22,24 +22,43 @@ jobs:
       env:
         Version: ${{ inputs.version }}
       run: |
-        git fetch --tags
-        $tags = git tag
-        $sortedTags = $tags | Sort-Object -Descending
-        $previousVersion = $null
-        $versionExists = $false
-
-        foreach ($tag in $sortedTags) {
-          echo "Checking tag $tag"
-          if ($tag -lt $env:Version) {
-            if ($previousVersion -eq $null -or $tag -gt $previousVersion) {
-              $previousVersion = $tag
-            }
+        function Get-Index($tag) {
+          # Split the tag into parts
+          $parts = $tag -split '\.'
+      
+          # Validate that there are at least three parts
+          if ($parts.Count -lt 3) {
+              Write-Warning "Tag '$tag' does not conform to expected SemVer format."
+              return 0
           }
-
-          if ($tag -eq $env:Version) {
-            $versionExists = $true
-          }
+      
+          # Convert parts to integers
+          $major = [int]$parts[0]
+          $minor = [int]$parts[1] -as [int]
+          $patch = [int]$parts[2] -as [int]
+      
+          # Return a calculated version number based on SemVer rules
+          $version = ($major * 10000) + ($minor * 100) + $patch
+          return $version
         }
+
+        git fetch --tags
+
+        $allTags = @() 
+        
+        git tag | ForEach-Object { 
+            $cleanTag = $_ -replace '^v', ''
+            $index = Get-Index $cleanTag
+            $tagObj = New-Object PSObject -Property @{
+                Tag = $cleanTag
+                Index = $index
+            }
+            $allTags += $tagObj
+        } 
+
+        $allTags = $allTags | Sort-Object -Property Index
+        # find the previous tag by selecting the version before the current one (by index)
+        $previousVersion = $allTags | Where-Object { $_.Index -lt (Get-Index $env:Version) } | Select-Object -Last 1
 
         if ($previousVersion -eq $null) {
           throw "No previous tag found before $env:Version"
