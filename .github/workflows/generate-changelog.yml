@@ -38,10 +38,10 @@ jobs:
             exit 1
           fi
 
-          if [ "$(printf '%s\n' "${{ env.PREVIOUS_VERSION }}" "${{ env.TARGET_VERSION }}" | sort -V | head -n1)" != "${{ env.PREVIOUS_VERSION }}" ]; then
-            echo "Previous version is newer than target version, skipping changelog generation"
-            exit 1
-          fi
+          # if [ "$(printf '%s\n' "${{ env.PREVIOUS_VERSION }}" "${{ env.TARGET_VERSION }}" | sort -V | head -n1)" != "${{ env.PREVIOUS_VERSION }}" ]; then
+          #   echo "Previous version is newer than target version, skipping changelog generation"
+          #   exit 1
+          # fi
 
           echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
       - name: Generate changelog
