@@ -55,7 +55,7 @@ jobs:
                 $cleanTag = $_ -replace '^v', ''
                 $index = Get-Index $cleanTag
                 $tagObj = New-Object PSObject -Property @{
-                    Tag = $cleanTag
+                    Tag = $_
                     Index = $index
                 }
                 $allTags += $tagObj
@@ -84,7 +84,9 @@ jobs:
             Write-Output "Skipping first tag $($tags[0])"        
             $tags = $tags[1..$tags.Count]
 
-            $versions = ConvertTo-Json -InputObject $tags -Compress
+            # Select into array
+            $tagData = $tags | Select-Object -Property Tag
+            $versions = ConvertTo-Json -InputObject $tagData -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
   update-release:

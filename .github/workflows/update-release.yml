@@ -64,6 +64,7 @@ jobs:
           throw "No previous tag found before $env:Version"
         } 
 
+        $versionExists = git tag --list "$env:Version" | Select-Object -First 1
         if ($versionExists -eq $false) {
           git config user.name "$env:GITHUB_ACTOR"
           git config user.email "$env:GITHUB_ACTOR_ID+$env:GITHUB_ACTOR@users.noreply.github.com"
