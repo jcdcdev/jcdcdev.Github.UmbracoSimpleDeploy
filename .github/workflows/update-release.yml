@@ -22,7 +22,8 @@ jobs:
       env:
         Version: ${{ inputs.version }}
       run: |
-        function Get-Index($tag) {
+        function Get-Index($input) {
+          $tag = $input -replace '^v', ''
           # Split the tag into parts
           $parts = $tag -split '\.'
       

@@ -28,7 +28,8 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
-            function Get-Index($tag) {
+            function Get-Index($input) {
+                $tag = $input -replace '^v', ''
                 # Split the tag into parts
                 $parts = $tag -split '\.'
             
