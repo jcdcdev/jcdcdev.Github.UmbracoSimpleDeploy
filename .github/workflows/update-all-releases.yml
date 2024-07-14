@@ -1,4 +1,5 @@
 name: 📄 Update Releases
+run-name: 📄 Update Releases - ${{ github.event.inputs.start-version }} - ${{ github.event.inputs.end-version }}
 on:
     workflow_call:
         inputs:
