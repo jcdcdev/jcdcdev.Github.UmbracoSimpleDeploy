@@ -68,24 +68,25 @@ jobs:
             $endTag = Get-Index $env:END_VERSION
             foreach ($tagObj in $allTags) {
                 $tag = $tagObj.Tag
-                echo "Checking tag $tag"
+                # echo "Checking tag $tag"
                 if ($tagObj.Index -ge $startTag -and $tagObj.Index -le $endTag) {
                     $tags += $tag
                 }
             }
 
             if ($tags.Count -gt 256) {
-                Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used"
+                Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used.`n`nPlease use the start-version defined below:`n`n"
                 Write-Output "start-version=$($tags[256])" >> $env:GITHUB_OUTPUT
 
                 $tags = $tags[0..255]
             }
+            
+            $versions = @()
 
-            Write-Output "Skipping first tag $($tags[0])"        
-            $tags = $tags[1..$tags.Count]
-
-            # Select into array
-            $tagData = $tags | Select-Object -Property Tag
+            $tags | ForEach-Object {
+                $versions += $($_.Tag)
+            }
+            
             $versions = ConvertTo-Json -InputObject $tagData -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
