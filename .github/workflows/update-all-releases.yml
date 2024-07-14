@@ -87,7 +87,7 @@ jobs:
                 $versions += $($_.Tag)
             }
             
-            $versions = ConvertTo-Json -InputObject $tagData -Compress
+            $versions = ConvertTo-Json -InputObject $versions -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
             echo "Versions are`n$versions"
   update-release:
