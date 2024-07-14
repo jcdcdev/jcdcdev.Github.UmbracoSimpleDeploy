@@ -27,8 +27,42 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
+            function Get-SemVerNumber($tag) {
+                # Split the tag into parts
+                $parts = $tag -split '\.'
+            
+                # Validate that there are at least three parts
+                if ($parts.Count -lt 3) {
+                    Write-Warning "Tag '$tag' does not conform to expected SemVer format."
+                    return 0
+                }
+            
+                # Convert parts to integers
+                $major = [int]$parts[0]
+                $minor = [int]$parts[1] -as [int]
+                $patch = [int]$parts[2] -as [int]
+            
+                # Return a calculated version number based on SemVer rules
+                $version = ($major * 10000) + ($minor * 100) + $patch
+                return $version
+            }
+
             git fetch --tags
-            $allTags = git tag | Sort-Object
+
+            $allTags = @() 
+            
+            git tag | ForEach-Object { 
+                $cleanTag = $_ -replace '^v', ''
+                $semVerNumber = Get-SemVerNumber $cleanTag
+                $tagObj = New-Object PSObject -Property @{
+                    OriginalTag = $cleanTag
+                    SemVerNumber = $semVerNumber
+                }
+                $allTags += $tagObj
+            } 
+
+            $allTags = $allTags | Sort-Object -Property SemVerNumber
+
             $tags = @()
             foreach ($tag in $allTags) {
                 echo "Checking tag $tag"
@@ -39,11 +73,13 @@ jobs:
 
             if ($tags.Count -gt 256) {
                 Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used"
-                # Tell user what start tag to use to continue from where we left off
                 Write-Output "start-version=$($tags[256])" >> $env:GITHUB_OUTPUT
 
                 $tags = $tags[0..255]
             }
+
+            Write-Output "Skipping first tag $($tags[0])"        
+            $tags = $tags[1..$tags.Count]
 
             $versions = ConvertTo-Json -InputObject $tags -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
