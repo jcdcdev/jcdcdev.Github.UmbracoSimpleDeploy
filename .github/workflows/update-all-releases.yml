@@ -79,10 +79,11 @@ jobs:
             if ($tags.Count -gt 256) {
                 Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used.`n`nPlease use the start-version defined below:`n`n"
                 Write-Output "start-version=$($tags[256])" >> $env:GITHUB_OUTPUT
-
                 $tags = $tags[0..255]
             }
             
+            $tags = $tags | Where-Object { $_ -ne '0.0.0' }
+
             $versions = @()
 
             $tags | ForEach-Object {
