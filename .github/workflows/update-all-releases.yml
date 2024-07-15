@@ -28,9 +28,9 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
-            function Get-Index($input) {
-                Write-Host "Input is $input"
-                $tag = $input -replace '^v'
+            function Get-Index($originalTag) {
+                Write-Host "Input is $originalTag"
+                $tag = $originalTag -replace '^v'
                 Write-Host "Tag is $tag"
                 # Split the tag into parts
                 $parts = $tag -split '\.'
@@ -57,7 +57,7 @@ jobs:
             
             git tag | ForEach-Object { 
                 $originalTag = $_
-                $index = $(Get-Index $_)
+                $index = Get-Index $originalTag
                 $tagObj = New-Object PSObject -Property @{
                     Tag = $originalTag
                     Index = $index
