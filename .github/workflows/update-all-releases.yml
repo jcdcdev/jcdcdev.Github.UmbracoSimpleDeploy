@@ -57,7 +57,7 @@ jobs:
             
             git tag | ForEach-Object { 
                 $originalTag = $_
-                $index = Get-Index $originalTag
+                $index = $(Get-Index $_)
                 $tagObj = New-Object PSObject -Property @{
                     Tag = $originalTag
                     Index = $index
