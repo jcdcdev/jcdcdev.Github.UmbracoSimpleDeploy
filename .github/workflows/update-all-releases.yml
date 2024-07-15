@@ -28,11 +28,8 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
-            function Get-Index($originalTag) {
-                Write-Host "Input is $originalTag"
+            function Get-UniqueIndex($originalTag) {
                 $tag = $originalTag -replace '^v'
-                Write-Host "Tag is $tag"
-                # Split the tag into parts
                 $parts = $tag -split '\.'
             
                 # Validate that there are at least three parts
@@ -57,25 +54,24 @@ jobs:
             
             git tag | ForEach-Object { 
                 $originalTag = $_
-                $index = Get-Index $originalTag
+                $uniqueIndex = Get-UniqueIndex $originalTag
                 $tagObj = New-Object PSObject -Property @{
                     Tag = $originalTag
-                    Index = $index
+                    UniqueIndex = $uniqueIndex
                 }
                 $allTags += $tagObj
             } 
 
-            $allTags = $allTags | Sort-Object -Property Index
+            $allTags = $allTags | Sort-Object -Property UniqueIndex
 
             $tags = @()
-            $startTag = Get-Index $env:START_VERSION
-            $endTag = Get-Index $env:END_VERSION
+            $startTag = Get-UniqueIndex $($env:START_VERSION)
+            $endTag = Get-UniqueIndex $($env:END_VERSION)
             foreach ($tagObj in $allTags) {
                 $tag = $tagObj.Tag
-                $startIndex = $tagObj.Index
-                $endIndex = $tagObj.Index
-                if ($startIndex -ge $startTag -and $endIndex -le $endTag) {
-                    echo "Adding tag $tag"
+                $startUniqueIndex = $tagObj.UniqueIndex
+                $endUniqueIndex = $tagObj.UniqueIndex
+                if ($startUniqueIndex -ge $startTag -and $endUniqueIndex -le $endTag) {
                     $tags += $tag
                 }
             }
