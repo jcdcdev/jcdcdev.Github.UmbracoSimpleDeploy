@@ -48,10 +48,11 @@ jobs:
         $allTags = @() 
         
         git tag | ForEach-Object { 
-            $cleanTag = $_ -replace '^v', ''
+            $originalTag = $_
+            $cleanTag = $originalTag -replace '^v', ''
             $index = Get-Index $cleanTag
             $tagObj = New-Object PSObject -Property @{
-                Tag = $cleanTag
+                Tag = $originalTag
                 Index = $index
             }
             $allTags += $tagObj
@@ -59,7 +60,8 @@ jobs:
 
         $allTags = $allTags | Sort-Object -Property Index
         # find the previous tag by selecting the version before the current one (by index)
-        $previousVersion = $allTags | Where-Object { $_.Index -lt (Get-Index $env:Version) } | Select-Object -Last 1
+        $index = Get-Index $env:Version
+        $previousVersion = $allTags | Where-Object { $_.Index -lt $index } | Select-Object -Last 1
 
         if ($previousVersion -eq $null) {
           throw "No previous tag found before $env:Version"
