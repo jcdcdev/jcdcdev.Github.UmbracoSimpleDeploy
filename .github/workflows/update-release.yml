@@ -23,7 +23,7 @@ jobs:
         Version: ${{ inputs.version }}
       run: |
         function Get-Index($input) {
-          $tag = $input -replace '^v', ''
+          $tag = $input -replace '^v'
           # Split the tag into parts
           $parts = $tag -split '\.'
       
@@ -49,8 +49,7 @@ jobs:
         
         git tag | ForEach-Object { 
             $originalTag = $_
-            $cleanTag = $originalTag -replace '^v', ''
-            $index = Get-Index $cleanTag
+            $index = Get-Index $originalTag
             $tagObj = New-Object PSObject -Property @{
                 Tag = $originalTag
                 Index = $index

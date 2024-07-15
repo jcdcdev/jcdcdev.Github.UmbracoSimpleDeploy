@@ -29,7 +29,7 @@ jobs:
         id: set-matrix
         run: |
             function Get-Index($input) {
-                $tag = $input -replace '^v', ''
+                $tag = $input -replace '^v'
                 # Split the tag into parts
                 $parts = $tag -split '\.'
             
@@ -55,8 +55,7 @@ jobs:
             
             git tag | ForEach-Object { 
                 $originalTag = $_
-                $cleanTag = $originalTag -replace '^v', ''
-                $index = Get-Index $cleanTag
+                $index = Get-Index $originalTag
                 $tagObj = New-Object PSObject -Property @{
                     Tag = $originalTag
                     Index = $index
@@ -71,7 +70,9 @@ jobs:
             $endTag = Get-Index $env:END_VERSION
             foreach ($tagObj in $allTags) {
                 $tag = $tagObj.Tag
-                if ($tagObj.Index -ge $startTag -and $tagObj.Index -le $endTag) {
+                $startIndex = $tagObj.Index
+                $endIndex = $tagObj.Index
+                if ($startIndex -ge $startTag -and $endIndex -le $endTag) {
                     echo "Adding tag $tag"
                     $tags += $tag
                 }
