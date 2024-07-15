@@ -76,8 +76,9 @@ jobs:
           git push origin "$env:Version"
         }
         
-        Write-Output "The nearest previous tag to $env:Version is $previousVersion"
-        echo "previous-version=$previousVersion" >> $env:GITHUB_OUTPUT
+        $previousTag = $previousVersion.Tag
+        Write-Output "The nearest previous tag to $env:Version is $previousTag"
+        echo "previous-version=$previousTag" >> $env:GITHUB_OUTPUT
   generate-changelog:
     needs:
       - get-previous-version
