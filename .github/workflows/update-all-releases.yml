@@ -29,9 +29,9 @@ jobs:
         id: set-matrix
         run: |
             function Get-Index($input) {
-                echo "Input is $input"
+                Write-Host "Input is $input"
                 $tag = $input -replace '^v'
-                echo "Tag is $tag"
+                Write-Host "Tag is $tag"
                 # Split the tag into parts
                 $parts = $tag -split '\.'
             
