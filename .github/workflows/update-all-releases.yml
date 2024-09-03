@@ -72,7 +72,7 @@ jobs:
                 $patchIndex = Pad $patch.ToString() 3
                 $suffixIndex = Pad $suffix.ToString() 4
                 $index = "$majorIndex$minorIndex$patchIndex$suffixIndex"
-                # Write-Host "Tag '$originalTag'`n$majorIndex, $minorIndex, $patchIndex, $suffixIndex, $index`n`n"
+                Write-Host "Tag '$originalTag'`n$majorIndex, $minorIndex, $patchIndex, $suffixIndex, $index`n`n"
                 return $index -as [long]
             }
             
