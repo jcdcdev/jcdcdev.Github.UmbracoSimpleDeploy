@@ -55,7 +55,7 @@ jobs:
             
                 $suffix = 999
                 if ($suffixString -ne '') {
-                    $suffix = [int]($suffix -replace '[^0-9]', '')
+                    $suffix = [int]($suffixString -replace '[^0-9]', '')
                 }
             
                 $factor = 4
