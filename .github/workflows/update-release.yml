@@ -7,92 +7,10 @@ on:
         description: 'Version'
         required: true
 jobs:
-  get-previous-version:
+  update-release:
     runs-on: ubuntu-latest
-    outputs:
-      previous-version: ${{ steps.find-previous-tag.outputs.previous-version }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Find Previous Version
-      id: find-previous-tag
-      shell: pwsh
-      env:
-        Version: ${{ inputs.version }}
+    - name: Deprecation Notice
       run: |
-        function Get-Index($originalTag) {
-          Write-Host "Input is $originalTag"
-          $tag = $originalTag -replace '^v'
-          Write-Host "Tag is $tag"
-          # Split the tag into parts
-          $parts = $tag -split '\.'
-      
-          # Validate that there are at least three parts
-          if ($parts.Count -lt 3) {
-              Write-Warning "Tag '$tag' does not conform to expected SemVer format."
-              return 0
-          }
-      
-          # Convert parts to integers
-          $major = [int]$parts[0]
-          $minor = [int]$parts[1] -as [int]
-          $patch = [int]$parts[2] -as [int]
-      
-          # Return a calculated version number based on SemVer rules
-          $version = ($major * 10000) + ($minor * 100) + $patch
-          return $version
-        }
-
-        git fetch --tags
-
-        $allTags = @() 
-        
-        git tag | ForEach-Object { 
-            $originalTag = $_
-            $index = Get-Index $originalTag
-            $tagObj = New-Object PSObject -Property @{
-                Tag = $originalTag
-                Index = $index
-            }
-            $allTags += $tagObj
-        } 
-
-        $allTags = $allTags | Sort-Object -Property Index
-        # find the previous tag by selecting the version before the current one (by index)
-        $index = Get-Index $env:Version
-        $previousVersion = $allTags | Where-Object { $_.Index -lt $index } | Select-Object -Last 1
-
-        if ($previousVersion -eq $null) {
-          throw "No previous tag found before $env:Version"
-        } 
-
-        $versionExists = git tag --list "$env:Version" | Select-Object -First 1
-        if ($versionExists -eq $false) {
-          git config user.name "$env:GITHUB_ACTOR"
-          git config user.email "$env:GITHUB_ACTOR_ID+$env:GITHUB_ACTOR@users.noreply.github.com"
-          git tag -a "$env:Version" -m "Release $env:Version"
-          git push origin "$env:Version"
-        }
-        
-        $previousTag = $previousVersion.Tag
-        Write-Output "The nearest previous tag to $env:Version is $previousTag"
-        echo "previous-version=$previousTag" >> $env:GITHUB_OUTPUT
-  generate-changelog:
-    needs:
-      - get-previous-version
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/generate-changelog.yml@main
-    with:
-      target-version: ${{ inputs.version }}
-      previous-version: ${{ needs.get-previous-version.outputs.previous-version }}
-  create-release:
-    needs:
-      - get-previous-version
-      - generate-changelog
-    permissions:
-      contents: write
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/create-github-release.yml@main
-    with:
-      version: ${{ inputs.version }}
-      changelog: ${{ needs.generate-changelog.outputs.changelog }}
+        echo "This action is deprecated, please use jcdcdev/jcdcdev.Github.CreateRelease@main instead"
+        exit 1

@@ -100,8 +100,11 @@ jobs:
         max-parallel: 1
         matrix:
             version: ${{fromJson(needs.get-tags.outputs.versions)}}
-    uses: jcdcdev/jcdcdev.Github.UmbracoSimpleDeploy/.github/workflows/update-release.yml@main
-    permissions:
-        contents: write
-    with:
-        version: ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+        - name: Generate changelog
+          id: changelog
+          uses: jcdcdev/jcdcdev.Github.CreateRelease@main
+          with:
+            version: ${{ matrix.version }}
+            github-token: ${{ secrets.GITHUB_TOKEN }}

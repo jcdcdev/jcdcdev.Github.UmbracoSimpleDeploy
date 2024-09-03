@@ -14,7 +14,7 @@ on:
     outputs:
       changelog: 
         description: "Changelog"
-        value: ${{ jobs.generate-changelog.outputs.changelog }}
+        value: "This action is deprecated, please use jcdcdev/jcdcdev.Github.GenerateChangelog@main instead"
 jobs:
   generate-changelog:
     name: Generate Changelog
@@ -23,47 +23,9 @@ jobs:
       TARGET_VERSION: ${{ inputs.target-version }}
       PREVIOUS_VERSION: ${{ inputs.previous-version }}
     outputs:
-      changelog: ${{ steps.changelog.outputs.changelog }}
+      changelog: ""
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - if: ${{ env.PREVIOUS_VERSION == '' }}
-        run: echo "PREVIOUS_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo '')" >> $GITHUB_ENV
-      - name: Confirm previous version
+      - name: Deprecation Notice
         run: |
-          if [ -z "${{ env.PREVIOUS_VERSION }}" ]; then
-            echo "No previous version found, skipping changelog generation"
-            exit 1
-          fi
-
-          # if [ "$(printf '%s\n' "${{ env.PREVIOUS_VERSION }}" "${{ env.TARGET_VERSION }}" | sort -V | head -n1)" != "${{ env.PREVIOUS_VERSION }}" ]; then
-          #   echo "Previous version is newer than target version, skipping changelog generation"
-          #   exit 1
-          # fi
-
-          echo "Previous version: ${{ env.PREVIOUS_VERSION }}"
-      - name: Generate changelog
-        id: generate
-        uses: jaywcjlove/changelog-generator@main
-        with:
-          head-ref: ${{ env.TARGET_VERSION }}
-          base-ref: ${{ env.PREVIOUS_VERSION }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filter-author: (jcdcdev|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
-          filter: '(\+semver:\s?(breaking|major|feature|minor|fix|patch)|\+changelog-ignore:.*|Merge.*)'
-          custom-emoji: "feature🌟,nuget📦,chore🧹"
-      - name: Create Changelog Body
-        id: changelog
-        env:
-          CHANGELOG: |
-            Compare [${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}}](https://github.com/${{ github.repository }}/compare/${{ env.PREVIOUS_VERSION }}...${{env.TARGET_VERSION}})
-
-            ${{ steps.generate.outputs.changelog }}
-        run: |
-          {
-            echo 'changelog<<EOF'
-            echo "${CHANGELOG}"
-            echo EOF
-          } >> "$GITHUB_OUTPUT"
+          echo "This action is deprecated, please use jcdcdev/jcdcdev.Github.GenerateChangelog@main instead"
+          exit 1
