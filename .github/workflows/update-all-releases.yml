@@ -37,6 +37,15 @@ jobs:
                 return $value
             }
             
+            function PadLeft($value, $length) {
+                $value = $value.ToString()
+                $valueLength = $value.Length
+                for ($i = 0; $i -lt $length - $valueLength; $i++) {
+                    $value = "0$($value)"
+                }
+                return $value
+            }
+            
             function Get-UniqueIndex($originalTag) {
                 $tag = $originalTag -replace '^v'
                 $parts = $tag -split '\.'
@@ -53,26 +62,25 @@ jobs:
                 $patch = [int]$suffixParts[0] -as [int]
                 $suffixString = $suffixParts[1] -as [string]
             
-                $suffix = 999
+                $suffix = 0
                 if ($suffixString -ne '') {
                     $suffix = [int]($suffixString -replace '[^0-9]', '')
                 }
             
-                $factor = 4
+                $releaseType = 4
                 switch -wildcard ($suffixString) {
-                    '*alpha*' { $factor = 1 }
-                    '*beta*' { $factor = 2 }
-                    '*rc*' { $factor = 3 }
+                    '*alpha*' { $releaseType = 1 }
+                    '*beta*' { $releaseType = 2 }
+                    '*rc*' { $releaseType = 3 }
                 }
-                
-                $suffix = "$factor$suffix"
-            
+
                 $majorIndex = Pad $major.ToString() 3
                 $minorIndex = Pad $minor.ToString() 3
                 $patchIndex = Pad $patch.ToString() 3
-                $suffixIndex = Pad $suffix.ToString() 4
-                $index = "$majorIndex$minorIndex$patchIndex$suffixIndex"
-                Write-Host "Tag '$originalTag'`n$majorIndex, $minorIndex, $patchIndex, $suffixIndex, $index`n`n"
+                $suffixIndex = PadLeft $suffix.ToString() 3
+
+                $index = "$majorIndex$minorIndex$patchIndex$releaseType$suffixIndex"
+                Write-Host "Tag '$originalTag'`n$majorIndex, $minorIndex, $patchIndex, $releaseType, $suffixIndex, $index`n`n"
                 return $index -as [long]
             }
             
