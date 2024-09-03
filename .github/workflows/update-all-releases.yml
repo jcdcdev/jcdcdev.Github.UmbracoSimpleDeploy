@@ -28,91 +28,105 @@ jobs:
             END_VERSION: ${{ inputs.end-version }}
         id: set-matrix
         run: |
+            function Pad($value, $length) {
+                $value = $value.ToString()
+                $valueLength = $value.Length
+                for ($i = 0; $i -lt $length - $valueLength; $i++) {
+                    $value = "$($value)0"
+                }
+                return $value
+            }
+            
             function Get-UniqueIndex($originalTag) {
                 $tag = $originalTag -replace '^v'
                 $parts = $tag -split '\.'
-            
-                # Validate that there are at least three parts
+                        
                 if ($parts.Count -lt 3) {
                     Write-Warning "Tag '$tag' does not conform to expected SemVer format."
                     return 0
                 }
-            
-                # Convert parts to integers
+                        
                 $major = [int]$parts[0]
                 $minor = [int]$parts[1] -as [int]
                 $end = $parts[2]
                 $suffixParts = $end -split '-'
                 $patch = [int]$suffixParts[0] -as [int]
-                $suffix = $suffixParts[1] -as [string]
-
-                $patch = 10000
-
-                if ($suffix -ne '') {
-                    $patch = [int]($suffix -replace '[^0-9]', '')
-                }
-
-                $factor = 100
-                if ($suffix -match 'alpha') {
-                    $factor = 1000
-                }
-                if ($suffix -match 'beta') {
-                    $factor = 100
-                }
-                if ($suffix -match 'rc') {
-                    $factor = 10
-                }
-
-                $version = ($major * 100000) + ($minor * 1000) + ($patch * 100) + ($patch * $factor)
-                Write-Host "Tag '$originalTag' has a unique index of $version"
-                return $version
-            }
-
-            git fetch --tags
-
-            $allTags = @() 
+                $suffixString = $suffixParts[1] -as [string]
             
-            git tag | ForEach-Object { 
-                $originalTag = $_
-                $uniqueIndex = Get-UniqueIndex $originalTag
-                $tagObj = New-Object PSObject -Property @{
-                    Tag = $originalTag
-                    UniqueIndex = $uniqueIndex
+                $suffix = 999
+                if ($suffixString -ne '') {
+                    $suffix = [int]($suffix -replace '[^0-9]', '')
                 }
-                $allTags += $tagObj
-            } 
-
-            $allTags = $allTags | Sort-Object -Property UniqueIndex
-
-            $tags = @()
-            $startTag = Get-UniqueIndex $($env:START_VERSION)
-            $endTag = Get-UniqueIndex $($env:END_VERSION)
-            foreach ($tagObj in $allTags) {
-                $tag = $tagObj.Tag
-                $startUniqueIndex = $tagObj.UniqueIndex
-                $endUniqueIndex = $tagObj.UniqueIndex
-                if ($startUniqueIndex -ge $startTag -and $endUniqueIndex -le $endTag) {
-                    $tags += $tag
+            
+                $factor = 4
+                switch -wildcard ($suffixString) {
+                    '*alpha*' { $factor = 1 }
+                    '*beta*' { $factor = 2 }
+                    '*rc*' { $factor = 3 }
                 }
+                
+                $suffix = "$factor$suffix"
+            
+                $majorIndex = Pad $major.ToString() 3
+                $minorIndex = Pad $minor.ToString() 3
+                $patchIndex = Pad $patch.ToString() 3
+                $suffixIndex = Pad $suffix.ToString() 4
+                $index = "$majorIndex$minorIndex$patchIndex$suffixIndex"
+                # Write-Host "Tag '$originalTag'`n$majorIndex, $minorIndex, $patchIndex, $suffixIndex, $index`n`n"
+                return $index -as [long]
             }
-
+            
+            function Get-Tags($startVersion, $endVersion) {
+                Write-Host "Start version is $startVersion"
+                Write-Host "End version is $endVersion"
+            
+                $startIndex = Get-UniqueIndex $startVersion
+                $endIndex = Get-UniqueIndex $endVersion
+            
+                git fetch --tags --quiet
+            
+                $allTags = @() 
+                
+                git tag | ForEach-Object { 
+                    $originalTag = $_
+                    $uniqueIndex = Get-UniqueIndex $originalTag
+                    $tagObj = New-Object PSObject -Property @{
+                        Tag         = $originalTag
+                        UniqueIndex = $uniqueIndex
+                    }
+                    if ($uniqueIndex -ge $startIndex -and $uniqueIndex -le $endIndex) {
+                        $allTags += $tagObj
+                    }
+                } 
+            
+                $outputTags = $allTags | Sort-Object -Property UniqueIndex
+                return $outputTags
+            }
+            
+            $start = $env:START_VERSION
+            $end = $env:END_VERSION
+            
+            if ($null -eq $start) {
+                $start = '0.0.0'
+            }
+            
+            if ($null -eq $end) {
+                $end = '999.999.999'
+            }
+            
+            $tags = Get-Tags $start $end
+            
             if ($tags.Count -gt 256) {
-                Write-Output "There are $($tags.Count) tags in the list, only the first 256 will be used.`n`nPlease use the start-version defined below:`n`n"
-                Write-Output "start-version=$($tags[256])" >> $env:GITHUB_OUTPUT
+                Write-Host "There are $($tags.Count) tags in the list, only the first 256 will be used.`n`nPlease use the start-version defined below:`n`n"
+                Write-Host "$($tags[256].Tag)" -ForegroundColor Yellow
                 $tags = $tags[0..255]
             }
+                        
+            $versions = $tags | Select-Object -ExpandProperty Tag |  ConvertTo-Json  -Compress
             
-            $tags = $tags | Where-Object { $_ -ne '0.0.0' }
+            Write-Host "Ordered Versions are`n$versions"
 
-            $versions = @()
-
-            $tags | ForEach-Object {
-                $versions += $_
-            }
-            
-            $versions = ConvertTo-Json -InputObject $versions -Compress
             echo "versions=$versions" >> $env:GITHUB_OUTPUT
-            echo "Versions are`n$versions"
   update-release:
     needs: 
         - get-tags
