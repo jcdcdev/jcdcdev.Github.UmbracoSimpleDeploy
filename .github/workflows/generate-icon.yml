@@ -101,7 +101,7 @@ jobs:
           # Export SVG as PNG
           rsvg-convert -w $WIDTH -h $HEIGHT $SVG_TEMPLATE_INPUT -o $PNG_EXPORT_PATH 
       - name: 📦 Upload icon
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ICON_FILE_NAME }}
           path: ${{ env.PNG_EXPORT_PATH }}
