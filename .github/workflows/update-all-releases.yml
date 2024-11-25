@@ -79,9 +79,9 @@ jobs:
                     '*rc*' { $releaseType = 3 }
                 }
 
-                $majorIndex = Pad $major.ToString() 3
-                $minorIndex = Pad $minor.ToString() 3
-                $patchIndex = Pad $patch.ToString() 3
+                $majorIndex = PadLeft $major.ToString() 3
+                $minorIndex = PadLeft $minor.ToString() 3
+                $patchIndex = PadLeft $patch.ToString() 3
                 $suffixIndex = PadLeft $suffix.ToString() 3
 
                 $index = "$majorIndex$minorIndex$patchIndex$releaseType$suffixIndex"
